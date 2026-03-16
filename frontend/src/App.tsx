@@ -19,7 +19,6 @@ import PulseModal      from './components/PulseModal'
 import AuthModal       from './components/AuthModal'
 import ErrorBoundary   from './components/ErrorBoundary'
 import { toast }       from 'sonner'
-import { Analytics as VercelAnalytics } from '@vercel/analytics/react'
 
 // Dynamic API logic
 const API_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
@@ -256,7 +255,6 @@ export default function App() {
         </div>
       </div>
       {pulseOpen && <PulseModal onClose={() => setPulseOpen(false)} />}
-      <VercelAnalytics />
     </div>
   )
 }
