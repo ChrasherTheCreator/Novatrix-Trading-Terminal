@@ -49,3 +49,6 @@ playwright/.auth/
 # Backup
 Backup/
 Backup_*/
+
+.vercel
+.env*.local

@@ -358,7 +358,10 @@ export const useAppStore = create<AppState>()(
         const { token } = get()
         try {
           const res = await fetch(`${API_URL}/api/market/news`, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'ngrok-skip-browser-warning': 'true'
+            }
           })
           if (res.ok) {
             const data = await res.json()
@@ -376,7 +379,10 @@ export const useAppStore = create<AppState>()(
         set({ isEconomicLoading: true })
         try {
           const res = await fetch(`${API_URL}/api/calendar/economic`, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'ngrok-skip-browser-warning': 'true'
+            }
           })
           if (res.ok) {
             const data = await res.json()
@@ -430,7 +436,8 @@ export const useAppStore = create<AppState>()(
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'ngrok-skip-browser-warning': 'true'
             },
             body: JSON.stringify({ name: pbData.name, rules: pbData.rules, min_rr: pbData.avgRR || 0, description: pbData.description })
           })
@@ -448,7 +455,8 @@ export const useAppStore = create<AppState>()(
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'ngrok-skip-browser-warning': 'true'
             },
             body: JSON.stringify({ name: pbData.name, rules: pbData.rules, min_rr: pbData.avgRR, description: pbData.description })
           })
@@ -464,7 +472,10 @@ export const useAppStore = create<AppState>()(
         try {
           const res = await fetch(`${API_URL}/api/playbooks/${id}`, { 
             method: 'DELETE',
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'ngrok-skip-browser-warning': 'true'
+            }
           })
           if (res.ok) set((s) => ({ playbooks: s.playbooks.filter(p => p.id !== id) }))
         } catch (e) { console.error('Failed to remove playbook', e) }
@@ -474,7 +485,10 @@ export const useAppStore = create<AppState>()(
         const { token } = get()
         try {
           const res = await fetch(`${API_URL}/api/playbooks`, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'ngrok-skip-browser-warning': 'true'
+            }
           })
           if (res.ok) {
             const data = await res.json()
@@ -509,7 +523,8 @@ export const useAppStore = create<AppState>()(
             method: 'POST', 
             headers: { 
               'Content-Type': 'application/json',
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'ngrok-skip-browser-warning': 'true'
             }, 
             body: JSON.stringify(tradeData) 
           })
@@ -525,7 +540,10 @@ export const useAppStore = create<AppState>()(
         try {
           const response = await fetch(`${API_URL}/api/trades/${id}`, { 
             method: 'DELETE',
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'ngrok-skip-browser-warning': 'true'
+            }
           })
           if (response.ok) set((state) => ({ trades: state.trades.filter(t => t.id !== id) }))
         } catch (error) { console.error('Failed to remove trade', error) }
@@ -538,7 +556,8 @@ export const useAppStore = create<AppState>()(
             method: 'PUT', 
             headers: { 
               'Content-Type': 'application/json',
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'ngrok-skip-browser-warning': 'true'
             }, 
             body: JSON.stringify(tradeData) 
           })
@@ -553,7 +572,10 @@ export const useAppStore = create<AppState>()(
         const { token } = get()
         try {
           const response = await fetch(`${API_URL}/api/trades`, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'ngrok-skip-browser-warning': 'true'
+            }
           })
           if (response.ok) {
             const data = await response.json()
@@ -571,7 +593,8 @@ export const useAppStore = create<AppState>()(
             method: 'POST', 
             headers: { 
               'Content-Type': 'application/json',
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'ngrok-skip-browser-warning': 'true'
             }, 
             body: JSON.stringify({ trade_id: tradeId, prompt_type: promptType }) 
           })
@@ -585,7 +608,10 @@ export const useAppStore = create<AppState>()(
         set({ isCalendarLoading: true })
         try {
           const response = await fetch(`${API_URL}/api/calendar/summary/${accountId}`, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'ngrok-skip-browser-warning': 'true'
+            }
           })
           if (response.ok) {
             const calendarData = await response.json()
@@ -626,7 +652,10 @@ export const useAppStore = create<AppState>()(
         const { token } = get()
         try {
           const res = await fetch(`${API_URL}/api/market/quotes`, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'ngrok-skip-browser-warning': 'true'
+            }
           })
           if (res.ok) {
             const data = await res.json()
@@ -639,7 +668,10 @@ export const useAppStore = create<AppState>()(
         const { token } = get()
         try {
           const res = await fetch(`${API_URL}/api/market/history/${symbol}?interval=${interval}&limit=${limit}`, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'ngrok-skip-browser-warning': 'true'
+            }
           })
           if (res.ok) {
             const data = await res.json()
@@ -652,7 +684,10 @@ export const useAppStore = create<AppState>()(
         const { token } = get()
         try {
           const res = await fetch(`${API_URL}/api/market/history/${symbol}?interval=${interval}&limit=${limit}`, {
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'ngrok-skip-browser-warning': 'true'
+            }
           })
           if (res.ok) {
               const data = await res.json()
@@ -676,7 +711,14 @@ export const useAppStore = create<AppState>()(
 
       login: async (email, password) => {
         try {
-          const res = await fetch(`${API_URL}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) })
+          const res = await fetch(`${API_URL}/api/auth/login`, { 
+            method: 'POST', 
+            headers: { 
+              'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': 'true'
+            }, 
+            body: JSON.stringify({ email, password }) 
+          })
           if (res.ok) {
             const data = await res.json()
             set({ user: data.user, token: data.token })
@@ -688,7 +730,14 @@ export const useAppStore = create<AppState>()(
 
       register: async (username, email, password) => {
         try {
-          const res = await fetch(`${API_URL}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, email, password }) })
+          const res = await fetch(`${API_URL}/api/auth/register`, { 
+            method: 'POST', 
+            headers: { 
+              'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': 'true'
+            }, 
+            body: JSON.stringify({ username, email, password }) 
+          })
           if (res.ok) {
             const data = await res.json()
             set({ user: data.user, token: data.token })

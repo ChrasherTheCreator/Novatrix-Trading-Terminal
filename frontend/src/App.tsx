@@ -118,7 +118,9 @@ export default function App() {
 
     const loadData = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/trades`)
+        const res = await fetch(`${API_URL}/api/trades`, {
+          headers: { 'ngrok-skip-browser-warning': 'true' }
+        })
         if (res.ok) {
             const data = await res.json()
             if (Array.isArray(data.trades) && data.trades.length > 0) {
@@ -137,7 +139,9 @@ export default function App() {
       }
 
       try {
-        const res = await fetch(`${API_URL}/api/accounts`)
+        const res = await fetch(`${API_URL}/api/accounts`, {
+          headers: { 'ngrok-skip-browser-warning': 'true' }
+        })
         if (res.ok) {
             const data = await res.json()
             if (Array.isArray(data.accounts) && data.accounts.length > 0) {
