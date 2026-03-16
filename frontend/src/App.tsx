@@ -187,6 +187,14 @@ export default function App() {
               });
             } else if (msg.msg_type === 'MARKET_NEWS') {
               if (Array.isArray(msg.payload)) setNews(msg.payload);
+            } else if (msg.msg_type === 'FINNHUB_WEBHOOK') {
+              // Neue Logik für Finnhub Webhook Daten
+              console.log('Finnhub Webhook Data:', msg.payload);
+              toast.info('Finnhub Intelligence Update', {
+                description: msg.payload.category || 'New data received via Webhook',
+                icon: '⚡',
+                duration: 5000
+              });
             }
           } catch (e) { /* ignore */ }
         }

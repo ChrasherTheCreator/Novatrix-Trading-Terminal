@@ -11,7 +11,7 @@ use crate::{
 use axum::extract::ws::{Message, WebSocket};
 use axum::{
     extract::{Path, Query, State, WebSocketUpgrade},
-    http::StatusCode,
+    http::{StatusCode, HeaderMap},
     response::{IntoResponse, Json},
     routing::{get, post, put},
     Router,
@@ -19,7 +19,7 @@ use axum::{
 use serde_json::{json, Value};
 use sqlx::SqlitePool;
 use tokio::sync::broadcast;
-use tracing::error;
+use tracing::{error, warn, info};
 
 // ── App State ────────────────────────────────────────────────────────────────
 
@@ -36,7 +36,6 @@ use tower_http::services::ServeDir;
 
 pub fn create_router(state: AppState) -> Router {
     Router::new()
-        .nest_service("/", ServeDir::new("../frontend/dist").fallback(ServeDir::new("../frontend/dist/index.html")))
         .route("/api/auth/register", post(register_handler))
         .route("/api/auth/login", post(login_handler))
         .route("/api/trades", get(list_trades).post(add_trade))
@@ -53,7 +52,8 @@ pub fn create_router(state: AppState) -> Router {
         .route("/api/market/quotes", get(get_market_quotes_handler))
         .route("/api/market/history/:symbol", get(get_market_history_handler))
         .route("/api/market/news", get(get_market_news_handler))
-        .route("/api/webhooks/finnhub", post(finnhub_webhook_handler))
+        // Geändert: Webhook akzeptiert jetzt auch GET für einen schnellen Browser-Test
+        .route("/api/webhooks/finnhub", post(finnhub_webhook_handler).get(webhook_test_handler))
         .route("/api/pulses/:account_id", get(get_pulses_handler))
         .route("/api/pulses", post(add_pulse_handler))
         .route("/api/journals/:account_id", get(get_journals_handler))
@@ -67,7 +67,13 @@ pub fn create_router(state: AppState) -> Router {
         .route("/ws/mt5", get(mt5_ws_handler))
         .route("/ws/ticks", get(ticks_ws_handler))
         .route("/ws/scale", get(scale_ws_handler))
+        // Website-Dateien NUR ausliefern, wenn keine API-Route passt (Fallback)
+        .fallback_service(ServeDir::new("../frontend/dist").fallback(ServeDir::new("../frontend/dist/index.html")))
         .with_state(state)
+}
+
+async fn webhook_test_handler() -> impl IntoResponse {
+    (StatusCode::OK, "Finnhub Webhook Endpoint is ALIVE. Please use POST with X-Finnhub-Secret header for real data.")
 }
 
 async fn health() -> Json<Value> {
@@ -436,40 +442,54 @@ async fn get_market_news_handler(State(s): State<AppState>) -> impl IntoResponse
     }
 }
 
-use axum::http::HeaderMap;
+use axum::body::Bytes;
 
 async fn finnhub_webhook_handler(
     State(s): State<AppState>,
     headers: HeaderMap,
-    Json(payload): Json<Value>
+    body: Bytes
 ) -> impl IntoResponse {
-    // 1. Authentifizierung via Header prüfen (wie von Finnhub gefordert)
+    // DEBUG: Alle Header im Terminal anzeigen
+    info!("--- Incoming Finnhub Webhook ---");
+    for (name, value) in headers.iter() {
+        info!("Header: {}: {:?}", name, value);
+    }
+
+    // 1. Authentifizierung prüfen
     let expected_secret = std::env::var("FINNHUB_WEBHOOK_SECRET").unwrap_or_else(|_| "d6f1cb9r01qvn4o1f8dg".into());
     
-    let authenticated = headers
-        .get("X-Finnhub-Secret")
-        .and_then(|h| h.to_str().ok())
-        .map(|h| h == expected_secret)
-        .unwrap_or(false);
+    let received_secret = headers
+        .get("x-finnhub-secret") // Klein geschrieben, da HeaderMap normalisiert
+        .or_else(|| headers.get("X-Finnhub-Secret"))
+        .and_then(|h| h.to_str().ok());
+
+    info!("Expected Secret: {}", expected_secret);
+    info!("Received Secret: {:?}", received_secret);
+
+    let authenticated = received_secret.map(|s| s == expected_secret).unwrap_or(false);
 
     if !authenticated {
-        error!("Unauthorized Finnhub webhook attempt");
+        warn!("AUTH FAILED: Secret mismatch or missing");
         return StatusCode::UNAUTHORIZED.into_response();
     }
 
-    // 2. Sofort antworten (Acknowledge), um Timeouts zu verhindern
-    // Die Logik wird in einem Hintergrund-Task ausgeführt
-    tokio::spawn(async move {
-        let broadcast_msg = json!({
-            "msg_type": "FINNHUB_WEBHOOK",
-            "payload": payload
+    info!("AUTH SUCCESS: Processing payload...");
+
+    // 2. Body verarbeiten
+    if body.is_empty() {
+        info!("PING RECEIVED: Finnhub Test successful");
+        return StatusCode::OK.into_response();
+    }
+
+    if let Ok(payload) = serde_json::from_slice::<Value>(&body) {
+        tokio::spawn(async move {
+            let broadcast_msg = json!({
+                "msg_type": "FINNHUB_WEBHOOK",
+                "payload": payload
+            });
+            let _ = s.mt5_tx.send(serde_json::to_string(&broadcast_msg).unwrap_or_default());
         });
+    }
 
-        if let Ok(json_str) = serde_json::to_string(&broadcast_msg) {
-            let _ = s.mt5_tx.send(json_str);
-        }
-    });
-
-    // 2xx Status Code sofort zurückgeben
     StatusCode::OK.into_response()
 }
