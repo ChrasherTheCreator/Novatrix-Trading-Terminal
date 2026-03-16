@@ -1,0 +1,9 @@
+name: "ArtifactMirror"
+on:
+  - event: "artifact_updated"
+  - event: "task_finalized"
+actions:
+  - run: |
+      mkdir -p ./docs/gemini-logs
+      gemini agent artifacts get plan --format=markdown > ./docs/gemini-logs/plan_latest.md
+      gemini agent artifacts get walkthrough --format=markdown > ./docs/gemini-logs/walkthrough_$(date +%F).md

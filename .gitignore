@@ -1,0 +1,51 @@
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Rust
+backend/target/
+target/
+**/*.pdb
+**/*.exe
+**/*.d
+**/*.pdb
+**/*.log
+**/*.txt
+
+# Database
+backend/novatrix.db
+*.db
+*.db-journal
+
+# Environment
+.env
+backend/.env
+frontend/.env
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+playwright/.auth/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Backup
+Backup/
+Backup_*/

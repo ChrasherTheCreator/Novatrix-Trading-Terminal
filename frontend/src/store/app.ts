@@ -1,0 +1,721 @@
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+export type Theme = 'dark' | 'light'
+export type View  = 'dashboard' | 'analytics' | 'reports' | 'chart' | 'journal' | 'calendar' | 'settings' | 'playbooks' | 'backtest' | 'mentor' | 'watchlist' | 'sessions' | 'strategy'
+
+export type SettingsTab = 'profile' | 'general' | 'accounts' | 'security' | 'notifications' | 'data'
+
+export interface AppNotification {
+  id: string
+  title: string
+  message: string
+  time: string
+  type: 'info' | 'warning' | 'error' | 'success'
+  read: boolean
+}
+
+export interface NewsItem {
+  uuid: string
+  title: string
+  description: string
+  snippet: string
+  url: string
+  image_url: string
+  published_at: string
+  source: string
+  sentiment?: 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL'
+}
+
+export interface EconomicEvent {
+  id: string
+  event_time: string
+  currency: string
+  impact: string
+  title: string
+  actual?: string
+  forecast?: string
+  previous?: string
+  unit?: string
+  country?: string
+}
+
+export interface OptimizationScenario {
+  id: string
+  name: string
+  params: {
+    startBalance: number
+    numTrades: number
+    numSimulations: number
+    winRate: number
+    avgWin: number
+    avgLoss: number
+  }
+  stats: {
+    best: number
+    worst: number
+    avg: number
+    probSuccess: number
+  }
+}
+
+export interface Account {
+  id: string
+  name: string
+  size: string
+  type: 'Personal' | 'Prop-Firm'
+  currency: string
+  maxDD?: string
+  profitTarget?: string
+  propPhases?: 1 | 2
+  maxDDP2?: string
+  profitTargetP2?: string
+}
+
+export interface Trade {
+  id: string
+  symbol: string
+  side: 'LONG' | 'SHORT'
+  entry_price: number
+  exit_price: number | null
+  stop_loss?: number
+  take_profit?: number
+  lot_size?: number
+  pnl: number | null
+  pnl_pct: number | null
+  status: 'OPEN' | 'CLOSED'
+  created_at: string
+  entry_time?: string
+  mae?: number
+  mfe?: number
+  slippage?: number
+  risk_amount?: number
+  r_multiple?: number
+  playbook_id?: string
+  mistake_tags?: string[]
+  images?: string[]
+  notes?: string
+  emotion?: string
+  strategy?: string
+  account_id?: string
+  tags: string[]
+}
+
+export interface User {
+  id: string
+  username: string
+  email: string
+}
+
+export interface Connection {
+  id: string
+  name: string
+  desc: string
+  status: 'Connected' | 'Available'
+}
+
+export interface RiskSettings {
+  breakeven: string
+  dailyDD: string
+  riskPerTrade: string
+  maxLots: string
+  sessionAlerts: boolean
+}
+
+export interface PlaybookRule {
+  text: string
+  weight: number
+  done: boolean
+}
+
+export interface Playbook {
+  id: string
+  name: string
+  description?: string
+  winRate: number
+  trades: number
+  avgRR: number
+  rules: PlaybookRule[]
+}
+
+export interface LiveTick {
+  symbol: string
+  bid: number
+  ask: number
+  time: string
+}
+
+export interface Note {
+  id: string
+  date: string
+  title: string
+  content: string
+  type: 'Plan' | 'Review' | 'Analysis'
+}
+
+export interface BacktestSession {
+  id: string
+  date: string
+  trades: Trade[]
+  pnl: number
+}
+
+export interface Pulse {
+  id: string
+  account_id: string
+  mental_state: string
+  tags: string[]
+  emotional_rating: number
+  notes: string
+  created_at: string
+}
+
+export interface DailyJournal {
+  id: string
+  account_id: string
+  date: string
+  pre_market: string
+  outlook: string
+  intraday: string
+  post_market: string
+  freeform_content: string
+  journal_type: 'STRUCTURED' | 'FREEFORM'
+  created_at: string
+  updated_at: string
+}
+
+export interface WeightedScore {
+  id: string
+  account_id: string
+  date: string
+  process_score: number
+  performance_score: number
+  results_score: number
+  total_score: number
+  created_at: string
+}
+
+export interface CalendarDay {
+  pnl: number
+  win_rate: number
+  trades: number
+  avg_mae: number
+  avg_mfe: number
+}
+
+const MOCK_TRADES: Trade[] = [
+    { id: '1', symbol: 'BTCUSD', side: 'LONG', entry_price: 62000, exit_price: 62800, pnl: 800, pnl_pct: 1.2, status: 'CLOSED', tags: ['Trend Alignment', 'Support Bounce'], mistake_tags: [], created_at: new Date().toISOString(), mae: 150, mfe: 1200 },
+    { id: '2', symbol: 'EURUSD', side: 'SHORT', entry_price: 1.0850, exit_price: 1.0880, pnl: -300, pnl_pct: -0.3, status: 'CLOSED', tags: ['RSI Overbought'], mistake_tags: ['FOMO'], created_at: new Date().toISOString(), mae: 40, mfe: 10 },
+    { id: '3', symbol: 'GOLD', side: 'LONG', entry_price: 2350, exit_price: 2354.5, pnl: 450, pnl_pct: 0.2, status: 'CLOSED', tags: ['Support Bounce'], mistake_tags: [], created_at: new Date().toISOString(), mae: 20, mfe: 600 },
+    { id: '4', symbol: 'SPX', side: 'SHORT', entry_price: 18200, exit_price: 18090, pnl: 1100, pnl_pct: 0.6, status: 'CLOSED', tags: ['Volume Spike', 'Trend Alignment'], mistake_tags: [], created_at: new Date().toISOString(), mae: 80, mfe: 1400 }
+];
+
+const MOCK_PULSES: Pulse[] = [
+    { id: 'p1', account_id: '1', mental_state: 'Focused', emotional_rating: 8, notes: 'Feeling calm', created_at: new Date().toISOString(), tags: [] }
+];
+
+interface AppState {
+  theme: Theme
+  activeView: View
+  activeSettingsTab: SettingsTab
+  trades: Trade[]
+  accounts: Account[]
+  connections: Connection[]
+  riskSettings: RiskSettings
+  playbooks: Playbook[]
+  notes: Note[]
+  backtests: BacktestSession[]
+  marketQuotes: LiveTick[]
+  livePrices: Record<string, { price: number, change: number }>
+  marketHistory: Record<string, any[]>
+  historicalBars: Record<string, any[]>
+  optimizationScenarios: OptimizationScenario[]
+  notifications: AppNotification[]
+  timeFormat: '24h' | '12h'
+  
+  news: NewsItem[]
+  newsStatus: 'LIVE' | 'OFFLINE' | 'API_ERROR' | 'MISSING_KEY' | 'CONNECTION_FAILED' | 'LOADING'
+  fetchNews: () => Promise<void>
+  setNews: (news: NewsItem[]) => void
+  
+  economicEvents: EconomicEvent[]
+  isEconomicLoading: boolean
+  fetchEconomicEvents: () => Promise<void>
+  
+  chartSymbol: string
+  chartClass: string
+  
+  user: User | null
+  token: string | null
+  
+  setTheme: (t: Theme) => void
+  setView: (v: View) => void
+  setActiveSettingsTab: (t: SettingsTab) => void
+  setTrades: (t: Trade[]) => void
+  setUser: (u: User | null) => void
+  
+  setChartAsset: (symbol: string, cls: string) => void
+  addScenario: (s: OptimizationScenario) => void
+  removeScenario: (id: string) => void
+  
+  addAccount: (acc: Account) => void
+  updateAccount: (id: string, acc: Partial<Account>) => void
+  removeAccount: (id: string) => void
+  
+  toggleConnection: (id: string) => void
+  setRiskSettings: (s: RiskSettings) => void
+  
+  addNotification: (n: Omit<AppNotification, 'id' | 'read' | 'time'>) => void
+  markNotificationRead: (id: string) => void
+  clearNotifications: () => void
+
+  addPlaybook: (pb: Partial<Playbook>) => Promise<void>
+  updatePlaybook: (id: string, pb: Partial<Playbook>) => Promise<void>
+  removePlaybook: (id: string) => Promise<void>
+  fetchPlaybooks: () => Promise<void>
+
+  tagMistake: (tradeId: string, mistake: string) => void
+  addNote: (note: Note) => void
+  updateNote: (id: string, note: Partial<Note>) => void
+  addBacktest: (bt: BacktestSession) => void
+
+  pulses: Pulse[]
+  journals: DailyJournal[]
+  latestScore: WeightedScore | null
+  
+  calendarData: Record<string, CalendarDay>
+  isCalendarLoading: boolean
+  
+  setPulses: (p: Pulse[]) => void
+  addPulse: (p: Pulse) => void
+  setJournals: (j: DailyJournal[]) => void
+  setLatestScore: (s: WeightedScore | null) => void
+
+  addTrade: (trade: Partial<Trade>) => Promise<void>
+  updateTrade: (id: string, trade: Partial<Trade>) => Promise<void>
+  removeTrade: (id: string) => Promise<void>
+  fetchTrades: () => Promise<void>
+  analyzeTrade: (tradeId: string, promptType: string) => Promise<any>
+  fetchCalendar: (accountId: string) => Promise<void>
+  fetchMarketQuotes: () => Promise<void>
+  fetchMarketHistory: (symbol: string, interval?: string, limit?: number) => Promise<void>
+  fetchHistoricalBars: (symbol: string, interval?: string, limit?: number) => Promise<void>
+  updateLivePrice: (symbol: string, price: number, change: number) => void
+  updateCalendarDay: (date: string, pnlChange: number, mae?: number, mfe?: number) => void
+  startPriceWiggle: () => void
+
+  resetToMocks: () => void
+
+  login: (email: string, pass: string) => Promise<boolean>
+  register: (username: string, email: string, pass: string) => Promise<boolean>
+  logout: () => void
+}
+
+const normalizeTrade = (t: any): Trade => ({
+  ...t,
+  status: String(t.status).toUpperCase() as 'OPEN' | 'CLOSED',
+  images: typeof t.images === 'string' ? (t.images ? t.images.split(',') : []) : (Array.isArray(t.images) ? t.images : []),
+  mistake_tags: typeof t.mistake_tags === 'string' ? (t.mistake_tags ? t.mistake_tags.split(',') : []) : (Array.isArray(t.mistake_tags) ? t.mistake_tags : []),
+})
+
+export const useAppStore = create<AppState>()(
+  persist(
+    (set, get) => ({
+      theme:      'dark',
+      activeView: 'dashboard',
+      activeSettingsTab: 'general',
+      trades:     [],
+      accounts: [
+        { id: '1', name: 'FX Pro Account', size: '$50,000', type: 'Prop-Firm', currency: 'USD', maxDD: '10%' }
+      ],
+      connections: [
+        { id: 'mt5', name: 'MetaTrader 5', desc: 'Connect via Expert Advisor bridge', status: 'Connected' },
+      ],
+      riskSettings: {
+        breakeven: '0.1',
+        dailyDD: '2',
+        riskPerTrade: '1',
+        maxLots: '5',
+        sessionAlerts: false
+      },
+      playbooks: [],
+      notes: [],
+      backtests: [],
+      marketQuotes: [],
+      livePrices: {},
+      marketHistory: {},
+      historicalBars: {},
+      optimizationScenarios: [],
+      notifications: [],
+      timeFormat: '24h',
+      
+      news: [],
+      newsStatus: 'LOADING',
+      fetchNews: async () => {
+        const { token } = get()
+        try {
+          const res = await fetch('http://localhost:3001/api/market/news', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          })
+          if (res.ok) {
+            const data = await res.json()
+            set({ news: data.payload || [], newsStatus: data.status || 'LIVE' })
+          }
+        } catch (e) { console.error('Failed to fetch news', e) }
+      },
+
+      setNews: (news) => set({ news }),
+
+      economicEvents: [],
+      isEconomicLoading: false,
+      fetchEconomicEvents: async () => {
+        const { token } = get()
+        set({ isEconomicLoading: true })
+        try {
+          const res = await fetch('http://localhost:3001/api/calendar/economic', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          })
+          if (res.ok) {
+            const data = await res.json()
+            set({ economicEvents: data.events || [], isEconomicLoading: false })
+          }
+        } catch (e) { set({ isEconomicLoading: false }) }
+      },
+
+      chartSymbol: 'BTCUSD',
+      chartClass: 'crypto',
+      
+      user: null,
+      token: null,
+      
+      setTheme: (theme) => set({ theme }),
+      setView:    (activeView) => set({ activeView }),
+      setActiveSettingsTab: (activeSettingsTab) => set({ activeSettingsTab }),
+      setTrades:  (trades) => set({ trades: trades.length > 0 ? trades : get().trades }),
+      setUser: (user) => set({ user }),
+      
+      setChartAsset: (chartSymbol, chartClass) => set({ chartSymbol, chartClass }),
+      addScenario: (scenario) => set((s) => ({ optimizationScenarios: [scenario, ...s.optimizationScenarios] })),
+      removeScenario: (id) => set((s) => ({ optimizationScenarios: s.optimizationScenarios.filter(sc => sc.id !== id) })),
+      
+      addAccount: (acc) => set((s) => ({ accounts: [acc, ...s.accounts] })),
+      updateAccount: (id, acc) => set((s) => ({
+        accounts: s.accounts.map(a => a.id === id ? { ...a, ...acc } : a)
+      })),
+      removeAccount: (id) => set((s) => ({
+        accounts: s.accounts.filter(a => a.id !== id)
+      })),
+      
+      toggleConnection: (id) => set((s) => ({
+        connections: s.connections.map(c => c.id === id ? { ...c, status: c.status === 'Connected' ? 'Available' : 'Connected' } : c)
+      })),
+      
+      setRiskSettings: (riskSettings) => set({ riskSettings }),
+
+      addNotification: (n) => set((s) => ({
+        notifications: [{ ...n, id: Math.random().toString(36).substr(2, 9), read: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }, ...s.notifications]
+      })),
+      markNotificationRead: (id) => set((s) => ({
+        notifications: s.notifications.map(n => n.id === id ? { ...n, read: true } : n)
+      })),
+      clearNotifications: () => set({ notifications: [] }),
+      
+      addPlaybook: async (pbData) => {
+        const { token } = get()
+        try {
+          const res = await fetch('http://localhost:3001/api/playbooks', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({ name: pbData.name, rules: pbData.rules, min_rr: pbData.avgRR || 0, description: pbData.description })
+          })
+          if (res.ok) {
+            const newPb = await res.json()
+            set((s) => ({ playbooks: [...s.playbooks, { ...newPb, rules: typeof newPb.rules === 'string' ? JSON.parse(newPb.rules) : newPb.rules, avgRR: newPb.min_rr, winRate: 0, trades: 0 }] }))
+          }
+        } catch (e) { console.error('Failed to add playbook', e) }
+      },
+
+      updatePlaybook: async (id, pbData) => {
+        const { token } = get()
+        try {
+          const res = await fetch(`http://localhost:3001/api/playbooks/${id}`, {
+            method: 'PUT',
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({ name: pbData.name, rules: pbData.rules, min_rr: pbData.avgRR, description: pbData.description })
+          })
+          if (res.ok) {
+            const updated = await res.json()
+            set((s) => ({ playbooks: s.playbooks.map(p => p.id === id ? { ...p, ...updated, rules: typeof updated.rules === 'string' ? JSON.parse(updated.rules) : updated.rules, avgRR: updated.min_rr } : p) }))
+          }
+        } catch (e) { console.error('Failed to update playbook', e) }
+      },
+
+      removePlaybook: async (id) => {
+        const { token } = get()
+        try {
+          const res = await fetch(`http://localhost:3001/api/playbooks/${id}`, { 
+            method: 'DELETE',
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          })
+          if (res.ok) set((s) => ({ playbooks: s.playbooks.filter(p => p.id !== id) }))
+        } catch (e) { console.error('Failed to remove playbook', e) }
+      },
+
+      fetchPlaybooks: async () => {
+        const { token } = get()
+        try {
+          const res = await fetch('http://localhost:3001/api/playbooks', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          })
+          if (res.ok) {
+            const data = await res.json()
+            if (Array.isArray(data.playbooks)) {
+              const normalized = data.playbooks.map((pb: any) => ({ ...pb, rules: typeof pb.rules === 'string' ? JSON.parse(pb.rules) : pb.rules, avgRR: pb.min_rr, winRate: 0, trades: 0 }))
+              set({ playbooks: normalized })
+            }
+          }
+        } catch (e) { console.error('Failed to fetch playbooks', e) }
+      },
+
+      tagMistake: (tradeId, mistake) => set((s) => ({ trades: s.trades.map(t => t.id === tradeId ? { ...t, mistake_tags: [...(t.mistake_tags || []), mistake] } : t) })),
+      addNote: (note) => set((s) => ({ notes: [note, ...s.notes] })),
+      updateNote: (id, note) => set((s) => ({ notes: s.notes.map(n => n.id === id ? { ...n, ...note } : n) })),
+      addBacktest: (bt) => set((s) => ({ backtests: [...s.backtests, bt] })),
+
+      pulses: [],
+      journals: [],
+      latestScore: null,
+      calendarData: {},
+      isCalendarLoading: false,
+
+      setPulses: (pulses) => set({ pulses }),
+      addPulse: (pulse) => set((s) => ({ pulses: [pulse, ...s.pulses] })),
+      setJournals: (journals) => set({ journals }),
+      setLatestScore: (latestScore) => set({ latestScore }),
+
+      addTrade: async (tradeData) => {
+        const { token } = get()
+        try {
+          const response = await fetch('http://localhost:3001/api/trades', { 
+            method: 'POST', 
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            }, 
+            body: JSON.stringify(tradeData) 
+          })
+          if (response.ok) {
+            const newTrade = await response.json()
+            set((state) => ({ trades: [normalizeTrade(newTrade), ...state.trades] }))
+          }
+        } catch (error) { console.error('Failed to add trade', error) }
+      },
+
+      removeTrade: async (id) => {
+        const { token } = get()
+        try {
+          const response = await fetch(`http://localhost:3001/api/trades/${id}`, { 
+            method: 'DELETE',
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          })
+          if (response.ok) set((state) => ({ trades: state.trades.filter(t => t.id !== id) }))
+        } catch (error) { console.error('Failed to remove trade', error) }
+      },
+
+      updateTrade: async (id, tradeData) => {
+        const { token } = get()
+        try {
+          const response = await fetch(`http://localhost:3001/api/trades/${id}`, { 
+            method: 'PUT', 
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            }, 
+            body: JSON.stringify(tradeData) 
+          })
+          if (response.ok) {
+            const updated = await response.json()
+            set((state) => ({ trades: state.trades.map(t => t.id === id ? normalizeTrade(updated) : t) }))
+          }
+        } catch (error) { console.error('Failed to update trade', error) }
+      },
+
+      fetchTrades: async () => {
+        const { token } = get()
+        try {
+          const response = await fetch('http://localhost:3001/api/trades', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          })
+          if (response.ok) {
+            const data = await response.json()
+            if (Array.isArray(data.trades)) {
+              set({ trades: data.trades.map(normalizeTrade) })
+            }
+          }
+        } catch (error) { console.error('Failed to fetch trades', error) }
+      },
+
+      analyzeTrade: async (tradeId: string, promptType: string) => {
+        const { token } = get()
+        try {
+          const res = await fetch(`http://localhost:3001/api/ai/analyze-trade/${tradeId}`, { 
+            method: 'POST', 
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            }, 
+            body: JSON.stringify({ trade_id: tradeId, prompt_type: promptType }) 
+          })
+          if (res.ok) return await res.json()
+        } catch (e) { console.error('AI Analysis failed', e) }
+        return null
+      },
+
+      fetchCalendar: async (accountId) => {
+        const { token } = get()
+        set({ isCalendarLoading: true })
+        try {
+          const response = await fetch(`http://localhost:3001/api/calendar/summary/${accountId}`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          })
+          if (response.ok) {
+            const calendarData = await response.json()
+            set({ calendarData, isCalendarLoading: false })
+          } else { set({ isCalendarLoading: false }) }
+        } catch (error) { console.error('Failed to fetch calendar summary', error) ; set({ isCalendarLoading: false }) }
+      },
+
+      updateLivePrice: (symbol, price, change) => set((s) => {
+        const current = s.livePrices[symbol] || { price, change: 0 }
+        const history = s.marketHistory[symbol] || []
+        
+        // Calculate real change % based on the start of the current history (Open of period)
+        let liveChange = change || current.change
+        if (history.length > 0) {
+            const openPrice = history[0].price
+            if (openPrice !== 0) {
+                liveChange = ((price - openPrice) / openPrice) * 100
+            }
+        }
+
+        const now = new Date()
+        const currentTimeKey = `${now.getHours()}:${now.getMinutes()}`
+        
+        let newHistory = [...history]
+        if (newHistory.length > 0 && newHistory[newHistory.length - 1].time === currentTimeKey) {
+            newHistory[newHistory.length - 1] = { ...newHistory[newHistory.length - 1], price, change: liveChange }
+        } else {
+            newHistory = [...newHistory.slice(-49), { time: currentTimeKey, price, change: liveChange }]
+        }
+
+        return { 
+            livePrices: { ...s.livePrices, [symbol]: { price, change: liveChange } },
+            marketHistory: { ...s.marketHistory, [symbol]: newHistory }
+        }
+      }),
+
+      fetchMarketQuotes: async () => {
+        const { token } = get()
+        try {
+          const res = await fetch('http://localhost:3001/api/market/quotes', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          })
+          if (res.ok) {
+            const data = await res.json()
+            set({ marketQuotes: data.quotes || [] })
+          }
+        } catch (e) { console.error('Failed to fetch market quotes', e) }
+      },
+
+      fetchMarketHistory: async (symbol: string, interval: string = '1min', limit: number = 50) => {
+        const { token } = get()
+        try {
+          const res = await fetch(`http://localhost:3001/api/market/history/${symbol}?interval=${interval}&limit=${limit}`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          })
+          if (res.ok) {
+            const data = await res.json()
+            set((s) => ({ marketHistory: { ...s.marketHistory, [symbol]: data.history } }))
+          }
+        } catch (e) { console.error(`Failed to fetch history for ${symbol}`, e) }
+      },
+
+      fetchHistoricalBars: async (symbol: string, interval: string = '1day', limit: number = 100) => {
+        const { token } = get()
+        try {
+          const res = await fetch(`http://localhost:3001/api/market/history/${symbol}?interval=${interval}&limit=${limit}`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          })
+          if (res.ok) {
+              const data = await res.json()
+              set((s) => ({ historicalBars: { ...s.historicalBars, [symbol]: data.history } }))
+          }
+        } catch (e) { console.error(`Failed to fetch historical bars for ${symbol}`, e) }
+      },
+
+      startPriceWiggle: () => {
+        // Purged: No more fake random movements. 
+        // Real ticks from backend mirror handle updates.
+      },
+
+      updateCalendarDay: (date, pnlChange, mae, mfe) => set((s) => {
+        const current = s.calendarData[date] || { pnl: 0, win_rate: 0, trades: 0, avg_mae: 0, avg_mfe: 0 };
+        const newPnl = current.pnl + pnlChange;
+        const newTrades = current.trades + 1;
+        const newAvgMae = mae !== undefined ? (current.avg_mae * current.trades + mae) / newTrades : current.avg_mae;
+        const newAvgMfe = mfe !== undefined ? (current.avg_mfe * current.trades + mfe) / newTrades : current.avg_mfe;
+        return { calendarData: { ...s.calendarData, [date]: { ...current, pnl: newPnl, trades: newTrades, avg_mae: newAvgMae, avg_mfe: newAvgMfe, win_rate: (newPnl > 0 ? 100 : 0) } } }
+      }),
+
+      resetToMocks: () => set({ trades: MOCK_TRADES, pulses: MOCK_PULSES, activeView: 'dashboard' }),
+
+      login: async (email, password) => {
+        try {
+          const res = await fetch('http://localhost:3001/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) })
+          if (res.ok) {
+            const data = await res.json()
+            set({ user: data.user, token: data.token })
+            return true
+          }
+        } catch (e) { return false }
+      },
+
+      register: async (username, email, password) => {
+        try {
+          const res = await fetch('http://localhost:3001/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, email, password }) })
+          if (res.ok) {
+            const data = await res.json()
+            set({ user: data.user, token: data.token })
+            return true
+          }
+        } catch (e) { return false }
+      },
+
+      logout: () => {
+        set({ user: null, token: null })
+        localStorage.removeItem('novatrix-app')
+        window.location.reload()
+      },
+    }),
+    { 
+      name: 'novatrix-app',
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+            if (!state.trades) state.trades = [];
+            if (!state.user && state.token) state.user = null;
+        }
+      },
+      partialize: (state) => ({ 
+        theme: state.theme, activeView: state.activeView, activeSettingsTab: state.activeSettingsTab, trades: state.trades, accounts: state.accounts,
+        riskSettings: state.riskSettings, playbooks: state.playbooks, connections: state.connections,
+        user: state.user, token: state.token
+      }),
+    }
+  )
+)
