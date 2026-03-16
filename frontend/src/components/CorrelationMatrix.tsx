@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
 import { useAppStore } from '../store/app'
-import { Link2, Info, Settings2, RefreshCw } from 'lucide-react'
+import { Link2, Settings2, RefreshCw } from 'lucide-react'
 import { Select } from './ui/Select'
 import { motion } from 'framer-motion'
 

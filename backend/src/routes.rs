@@ -32,8 +32,11 @@ pub struct AppState {
 
 // ── Router ────────────────────────────────────────────────────────────────────
 
+use tower_http::services::ServeDir;
+
 pub fn create_router(state: AppState) -> Router {
     Router::new()
+        .nest_service("/", ServeDir::new("../frontend/dist").fallback(ServeDir::new("../frontend/dist/index.html")))
         .route("/api/auth/register", post(register_handler))
         .route("/api/auth/login", post(login_handler))
         .route("/api/trades", get(list_trades).post(add_trade))
@@ -433,16 +436,40 @@ async fn get_market_news_handler(State(s): State<AppState>) -> impl IntoResponse
     }
 }
 
-async fn finnhub_webhook_handler(State(s): State<AppState>, Json(payload): Json<Value>) -> impl IntoResponse {
-    // Broadcast the webhook data to all connected clients via WebSocket
-    let broadcast_msg = json!({
-        "msg_type": "FINNHUB_WEBHOOK",
-        "payload": payload
-    });
+use axum::http::HeaderMap;
 
-    if let Ok(json_str) = serde_json::to_string(&broadcast_msg) {
-        let _ = s.mt5_tx.send(json_str);
+async fn finnhub_webhook_handler(
+    State(s): State<AppState>,
+    headers: HeaderMap,
+    Json(payload): Json<Value>
+) -> impl IntoResponse {
+    // 1. Authentifizierung via Header prüfen (wie von Finnhub gefordert)
+    let expected_secret = std::env::var("FINNHUB_WEBHOOK_SECRET").unwrap_or_else(|_| "d6f1cb9r01qvn4o1f8dg".into());
+    
+    let authenticated = headers
+        .get("X-Finnhub-Secret")
+        .and_then(|h| h.to_str().ok())
+        .map(|h| h == expected_secret)
+        .unwrap_or(false);
+
+    if !authenticated {
+        error!("Unauthorized Finnhub webhook attempt");
+        return StatusCode::UNAUTHORIZED.into_response();
     }
 
-    StatusCode::OK
+    // 2. Sofort antworten (Acknowledge), um Timeouts zu verhindern
+    // Die Logik wird in einem Hintergrund-Task ausgeführt
+    tokio::spawn(async move {
+        let broadcast_msg = json!({
+            "msg_type": "FINNHUB_WEBHOOK",
+            "payload": payload
+        });
+
+        if let Ok(json_str) = serde_json::to_string(&broadcast_msg) {
+            let _ = s.mt5_tx.send(json_str);
+        }
+    });
+
+    // 2xx Status Code sofort zurückgeben
+    StatusCode::OK.into_response()
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, CheckSquare, Square, Trash2, ChevronRight, Info, Star, Edit3, Save, Layout, Settings2, BarChart3, HelpCircle } from 'lucide-react'
+import { Plus, CheckSquare, Square, Trash2, ChevronRight, Star, Save, Layout, Settings2, BarChart3, HelpCircle } from 'lucide-react'
 import { useAppStore } from '../store/app'
 import { Button } from '../components/ui/Button'
 import { toast } from 'sonner'

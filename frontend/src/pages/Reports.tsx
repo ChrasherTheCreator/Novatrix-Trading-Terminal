@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useAppStore, Trade } from '../store/app'
+import { useAppStore } from '../store/app'
 import { Download, Edit3 } from 'lucide-react'
 import { toast } from 'sonner'
 import TradeDetailModal from '../components/TradeDetailModal'

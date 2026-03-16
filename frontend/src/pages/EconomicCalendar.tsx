@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { Activity, Newspaper, TrendingUp, TrendingDown, ExternalLink, Wifi, WifiOff, Clock, Search, Filter, X, Info, Globe, AlertTriangle, FileText, BarChart, ChevronDown, ChevronUp, History, Calendar as CalendarIcon, Briefcase, Cpu, Coins, CandlestickChart } from 'lucide-react'
+import { Activity, Newspaper, ExternalLink, Search, X, Info, Globe, BarChart, ChevronDown, ChevronUp, History, Calendar as CalendarIcon, Briefcase, Cpu, Coins, CandlestickChart } from 'lucide-react'
 import { useAppStore, EconomicEvent as StoreEconomicEvent, NewsItem } from '../store/app'
 import { AnimatePresence, motion } from 'framer-motion'
 import { createPortal } from 'react-dom'
@@ -81,7 +81,7 @@ const getEnrichedData = (title: string) => {
 };
 
 export default function EconomicCalendar() {
-  const { news, newsStatus, fetchNews, economicEvents, fetchEconomicEvents } = useAppStore()
+  const { news, fetchNews, economicEvents, fetchEconomicEvents } = useAppStore()
   const [activeTab, setActiveTab] = useState<'CALENDAR' | 'NEWS'>('CALENDAR')
   const [filter, setFilter] = useState<'ALL' | 'HIGH'>('ALL')
   const [searchTerm, setSearchText] = useState('')
@@ -139,7 +139,7 @@ export default function EconomicCalendar() {
             event: e.title,
             impact: e.impact.toUpperCase() as any,
             previous: e.previous || '--',
-            forecast: e.forecast || e.estimate || '--',
+            forecast: e.forecast || '--',
             actual: e.actual || '',
             sentiment,
             is_live: diffMins <= 5 && diffMins >= -15,
@@ -239,7 +239,7 @@ export default function EconomicCalendar() {
                     </tr>
                 </thead>
                 <tbody>
-                    {dayEvents.map((event, idx) => {
+                    {dayEvents.map((event) => {
                         const eventDate = new Date(event.event_time);
                         const showMarker = isToday && !markerShown && eventDate > now;
                         if (showMarker) markerShown = true;

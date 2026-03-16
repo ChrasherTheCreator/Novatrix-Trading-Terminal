@@ -3,7 +3,7 @@ import { useAppStore } from './store/app'
 import Sidebar from './components/Sidebar'
 import Topbar  from './components/Topbar'
 import Dashboard       from './pages/Dashboard'
-import Analytics       from './pages/Analytics'
+import AnalyticsPage   from './pages/Analytics'
 import Journal         from './pages/Journal'
 import EconomicCalendar from './pages/EconomicCalendar'
 import Reports         from './pages/Reports'
@@ -19,6 +19,11 @@ import PulseModal      from './components/PulseModal'
 import AuthModal       from './components/AuthModal'
 import ErrorBoundary   from './components/ErrorBoundary'
 import { toast }       from 'sonner'
+import { Analytics as VercelAnalytics } from '@vercel/analytics/react'
+
+// Dynamic API logic
+const API_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
+const WS_URL = API_URL.replace('http', 'ws') + '/ws/ticks';
 
 export default function App() {
   const [hydrated, setHydrated] = useState(false)
@@ -113,7 +118,7 @@ export default function App() {
 
     const loadData = async () => {
       try {
-        const res = await fetch('http://localhost:3001/api/trades')
+        const res = await fetch(`${API_URL}/api/trades`)
         if (res.ok) {
             const data = await res.json()
             if (Array.isArray(data.trades) && data.trades.length > 0) {
@@ -132,7 +137,7 @@ export default function App() {
       }
 
       try {
-        const res = await fetch('http://localhost:3001/api/accounts')
+        const res = await fetch(`${API_URL}/api/accounts`)
         if (res.ok) {
             const data = await res.json()
             if (Array.isArray(data.accounts) && data.accounts.length > 0) {
@@ -157,7 +162,7 @@ export default function App() {
     let reconnectTimer: any = null
 
     const connect = () => {
-        ws = new WebSocket('ws://localhost:3001/ws/ticks')
+        ws = new WebSocket(WS_URL)
         ws.onmessage = (event) => {
           try {
             const msg = JSON.parse(event.data)
@@ -168,7 +173,6 @@ export default function App() {
             } else if (msg.msg_type === 'MARKET_TICK') {
               const { symbol, price } = msg.payload;
               if (symbol && price) {
-                // Ensure symbol is always uppercase and clean for the store
                 const cleanSym = symbol.toUpperCase().replace('/', '');
                 updateLivePrice(cleanSym, parseFloat(price), 0);
               }
@@ -195,10 +199,9 @@ export default function App() {
   }, [user, updateCalendarDay, updateLivePrice, setNews])
 
   const Page = () => {
-    console.log('Rendering View:', activeView);
     switch (activeView) {
       case 'dashboard':  return <Dashboard/>
-      case 'analytics':  return <Analytics/>
+      case 'analytics':  return <AnalyticsPage/>
       case 'journal':    return <Journal/>
       case 'calendar':   return <EconomicCalendar/>
       case 'reports':    return <Reports/>
@@ -213,8 +216,6 @@ export default function App() {
       default:           return <Dashboard/>
     }
   }
-
-  console.log('App State:', { hydrated, user: !!user, activeView });
 
   if (!hydrated) {
     return <div style={{ height: '100vh', background: '#0a0a12', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', gap: '1rem' }}>
@@ -243,6 +244,7 @@ export default function App() {
         </div>
       </div>
       {pulseOpen && <PulseModal onClose={() => setPulseOpen(false)} />}
+      <VercelAnalytics />
     </div>
   )
 }

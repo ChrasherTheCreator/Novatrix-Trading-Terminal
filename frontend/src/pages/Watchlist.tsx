@@ -5,20 +5,6 @@ import { toast } from 'sonner'
 import CorrelationMatrix from '../components/CorrelationMatrix'
 import { motion } from 'framer-motion'
 
-
-interface WatchlistItem {
-    symbol: string
-    price: string
-    change: string
-    changeNum: number
-    tech: {
-        rsi: number
-        trend: 'BULLISH' | 'BEARISH' | 'NEUTRAL'
-        volatility: 'HIGH' | 'LOW'
-        volume?: string
-    }
-}
-
 interface WatchlistGroup {
     id: string
     name: string

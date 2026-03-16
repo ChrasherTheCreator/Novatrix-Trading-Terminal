@@ -6,14 +6,17 @@ interface CryptoTick {
   price: string;
 }
 
-// Wrap in memo to prevent re-renders unless props change
+// Configuration for API and WebSocket
+const API_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
+const WS_URL = API_URL.replace('http', 'ws') + '/ws/ticks';
+
 const LiveWatchlist = memo(function LiveWatchlist() {
   const [cryptoPrices, setCryptoPrices] = useState<Record<string, { price: string, up: boolean | null }>>({});
   const [fiatRates, setFiatRates] = useState<Record<string, number>>({});
 
   useEffect(() => {
     // Dedicated WebSocket for this component to keep it isolated
-    const ws = new WebSocket('ws://localhost:3001/ws/ticks');
+    const ws = new WebSocket(WS_URL);
 
     ws.onmessage = (event) => {
       try {

@@ -214,6 +214,16 @@ const MOCK_PULSES: Pulse[] = [
     { id: 'p1', account_id: '1', mental_state: 'Focused', emotional_rating: 8, notes: 'Feeling calm', created_at: new Date().toISOString(), tags: [] }
 ];
 
+const normalizeTrade = (t: any): Trade => ({
+  ...t,
+  status: String(t.status).toUpperCase() as 'OPEN' | 'CLOSED',
+  images: typeof t.images === 'string' ? (t.images ? t.images.split(',') : []) : (Array.isArray(t.images) ? t.images : []),
+  mistake_tags: typeof t.mistake_tags === 'string' ? (t.mistake_tags ? t.mistake_tags.split(',') : []) : (Array.isArray(t.mistake_tags) ? t.mistake_tags : []),
+})
+
+// Configuration for API and WebSocket
+const API_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
+
 interface AppState {
   theme: Theme
   activeView: View
@@ -311,13 +321,6 @@ interface AppState {
   logout: () => void
 }
 
-const normalizeTrade = (t: any): Trade => ({
-  ...t,
-  status: String(t.status).toUpperCase() as 'OPEN' | 'CLOSED',
-  images: typeof t.images === 'string' ? (t.images ? t.images.split(',') : []) : (Array.isArray(t.images) ? t.images : []),
-  mistake_tags: typeof t.mistake_tags === 'string' ? (t.mistake_tags ? t.mistake_tags.split(',') : []) : (Array.isArray(t.mistake_tags) ? t.mistake_tags : []),
-})
-
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -354,7 +357,7 @@ export const useAppStore = create<AppState>()(
       fetchNews: async () => {
         const { token } = get()
         try {
-          const res = await fetch('http://localhost:3001/api/market/news', {
+          const res = await fetch(`${API_URL}/api/market/news`, {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           })
           if (res.ok) {
@@ -372,7 +375,7 @@ export const useAppStore = create<AppState>()(
         const { token } = get()
         set({ isEconomicLoading: true })
         try {
-          const res = await fetch('http://localhost:3001/api/calendar/economic', {
+          const res = await fetch(`${API_URL}/api/calendar/economic`, {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           })
           if (res.ok) {
@@ -423,7 +426,7 @@ export const useAppStore = create<AppState>()(
       addPlaybook: async (pbData) => {
         const { token } = get()
         try {
-          const res = await fetch('http://localhost:3001/api/playbooks', {
+          const res = await fetch(`${API_URL}/api/playbooks`, {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
@@ -441,7 +444,7 @@ export const useAppStore = create<AppState>()(
       updatePlaybook: async (id, pbData) => {
         const { token } = get()
         try {
-          const res = await fetch(`http://localhost:3001/api/playbooks/${id}`, {
+          const res = await fetch(`${API_URL}/api/playbooks/${id}`, {
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',
@@ -459,7 +462,7 @@ export const useAppStore = create<AppState>()(
       removePlaybook: async (id) => {
         const { token } = get()
         try {
-          const res = await fetch(`http://localhost:3001/api/playbooks/${id}`, { 
+          const res = await fetch(`${API_URL}/api/playbooks/${id}`, { 
             method: 'DELETE',
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           })
@@ -470,7 +473,7 @@ export const useAppStore = create<AppState>()(
       fetchPlaybooks: async () => {
         const { token } = get()
         try {
-          const res = await fetch('http://localhost:3001/api/playbooks', {
+          const res = await fetch(`${API_URL}/api/playbooks`, {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           })
           if (res.ok) {
@@ -502,7 +505,7 @@ export const useAppStore = create<AppState>()(
       addTrade: async (tradeData) => {
         const { token } = get()
         try {
-          const response = await fetch('http://localhost:3001/api/trades', { 
+          const response = await fetch(`${API_URL}/api/trades`, { 
             method: 'POST', 
             headers: { 
               'Content-Type': 'application/json',
@@ -520,7 +523,7 @@ export const useAppStore = create<AppState>()(
       removeTrade: async (id) => {
         const { token } = get()
         try {
-          const response = await fetch(`http://localhost:3001/api/trades/${id}`, { 
+          const response = await fetch(`${API_URL}/api/trades/${id}`, { 
             method: 'DELETE',
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           })
@@ -531,7 +534,7 @@ export const useAppStore = create<AppState>()(
       updateTrade: async (id, tradeData) => {
         const { token } = get()
         try {
-          const response = await fetch(`http://localhost:3001/api/trades/${id}`, { 
+          const response = await fetch(`${API_URL}/api/trades/${id}`, { 
             method: 'PUT', 
             headers: { 
               'Content-Type': 'application/json',
@@ -549,7 +552,7 @@ export const useAppStore = create<AppState>()(
       fetchTrades: async () => {
         const { token } = get()
         try {
-          const response = await fetch('http://localhost:3001/api/trades', {
+          const response = await fetch(`${API_URL}/api/trades`, {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           })
           if (response.ok) {
@@ -564,7 +567,7 @@ export const useAppStore = create<AppState>()(
       analyzeTrade: async (tradeId: string, promptType: string) => {
         const { token } = get()
         try {
-          const res = await fetch(`http://localhost:3001/api/ai/analyze-trade/${tradeId}`, { 
+          const res = await fetch(`${API_URL}/api/ai/analyze-trade/${tradeId}`, { 
             method: 'POST', 
             headers: { 
               'Content-Type': 'application/json',
@@ -581,7 +584,7 @@ export const useAppStore = create<AppState>()(
         const { token } = get()
         set({ isCalendarLoading: true })
         try {
-          const response = await fetch(`http://localhost:3001/api/calendar/summary/${accountId}`, {
+          const response = await fetch(`${API_URL}/api/calendar/summary/${accountId}`, {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           })
           if (response.ok) {
@@ -595,7 +598,6 @@ export const useAppStore = create<AppState>()(
         const current = s.livePrices[symbol] || { price, change: 0 }
         const history = s.marketHistory[symbol] || []
         
-        // Calculate real change % based on the start of the current history (Open of period)
         let liveChange = change || current.change
         if (history.length > 0) {
             const openPrice = history[0].price
@@ -623,7 +625,7 @@ export const useAppStore = create<AppState>()(
       fetchMarketQuotes: async () => {
         const { token } = get()
         try {
-          const res = await fetch('http://localhost:3001/api/market/quotes', {
+          const res = await fetch(`${API_URL}/api/market/quotes`, {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           })
           if (res.ok) {
@@ -636,7 +638,7 @@ export const useAppStore = create<AppState>()(
       fetchMarketHistory: async (symbol: string, interval: string = '1min', limit: number = 50) => {
         const { token } = get()
         try {
-          const res = await fetch(`http://localhost:3001/api/market/history/${symbol}?interval=${interval}&limit=${limit}`, {
+          const res = await fetch(`${API_URL}/api/market/history/${symbol}?interval=${interval}&limit=${limit}`, {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           })
           if (res.ok) {
@@ -649,7 +651,7 @@ export const useAppStore = create<AppState>()(
       fetchHistoricalBars: async (symbol: string, interval: string = '1day', limit: number = 100) => {
         const { token } = get()
         try {
-          const res = await fetch(`http://localhost:3001/api/market/history/${symbol}?interval=${interval}&limit=${limit}`, {
+          const res = await fetch(`${API_URL}/api/market/history/${symbol}?interval=${interval}&limit=${limit}`, {
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           })
           if (res.ok) {
@@ -659,10 +661,7 @@ export const useAppStore = create<AppState>()(
         } catch (e) { console.error(`Failed to fetch historical bars for ${symbol}`, e) }
       },
 
-      startPriceWiggle: () => {
-        // Purged: No more fake random movements. 
-        // Real ticks from backend mirror handle updates.
-      },
+      startPriceWiggle: () => {},
 
       updateCalendarDay: (date, pnlChange, mae, mfe) => set((s) => {
         const current = s.calendarData[date] || { pnl: 0, win_rate: 0, trades: 0, avg_mae: 0, avg_mfe: 0 };
@@ -677,23 +676,25 @@ export const useAppStore = create<AppState>()(
 
       login: async (email, password) => {
         try {
-          const res = await fetch('http://localhost:3001/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) })
+          const res = await fetch(`${API_URL}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) })
           if (res.ok) {
             const data = await res.json()
             set({ user: data.user, token: data.token })
             return true
           }
+          return false
         } catch (e) { return false }
       },
 
       register: async (username, email, password) => {
         try {
-          const res = await fetch('http://localhost:3001/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, email, password }) })
+          const res = await fetch(`${API_URL}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, email, password }) })
           if (res.ok) {
             const data = await res.json()
             set({ user: data.user, token: data.token })
             return true
           }
+          return false
         } catch (e) { return false }
       },
 
@@ -705,12 +706,6 @@ export const useAppStore = create<AppState>()(
     }),
     { 
       name: 'novatrix-app',
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-            if (!state.trades) state.trades = [];
-            if (!state.user && state.token) state.user = null;
-        }
-      },
       partialize: (state) => ({ 
         theme: state.theme, activeView: state.activeView, activeSettingsTab: state.activeSettingsTab, trades: state.trades, accounts: state.accounts,
         riskSettings: state.riskSettings, playbooks: state.playbooks, connections: state.connections,
