@@ -1,54 +1,84 @@
-import { useMemo, useState } from 'react'
+import { useMemo, memo } from 'react'
 import { useAppStore } from '../store/app'
 import { Radar as RadarIcon } from 'lucide-react'
 
-export default function PerformanceRadar() {
+const PerformanceRadar = memo(function PerformanceRadar() {
   const { trades = [] } = useAppStore()
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
+  
+  const size = 220
+  const center = size / 2
+  const radius = size * 0.35
 
   const radarStats = useMemo(() => {
     if (!Array.isArray(trades)) return Array(6).fill({ val: 0, raw: 0, label: '', suffix: '' })
     const closed = trades.filter(t => t && t.status === 'CLOSED' && t.pnl !== null)
-    if (closed.length === 0) return Array(6).fill({ val: 0, raw: 0, label: '', suffix: '' })
+    
+    if (closed.length === 0) return [
+        { label: 'WINRATE', val: 0, raw: 0, suffix: '%' },
+        { label: 'PROF. FACTOR', val: 0, raw: 0, suffix: '' },
+        { label: 'AVG R/R', val: 0, raw: 0, suffix: ':1' },
+        { label: 'DISCIPLINE', val: 0, raw: 0, suffix: '%' },
+        { label: 'EXECUTION', val: 0, raw: 0, suffix: '%' },
+        { label: 'CONSISTENCY', val: 0, raw: 0, suffix: '%' }
+    ]
 
     const wins = closed.filter(t => (t.pnl || 0) > 0)
     const winrate = (wins.length / closed.length) * 100
     const grossWin = wins.reduce((s, t) => s + (t.pnl || 0), 0)
     const grossLoss = Math.abs(closed.filter(t => (t.pnl || 0) <= 0).reduce((s, t) => s + (t.pnl || 0), 0))
-    const pf = grossLoss > 0 ? grossWin / grossLoss : 2.0
-    const avgRR = 2.5 
+    const pf = grossLoss > 0 ? grossWin / grossLoss : (grossWin > 0 ? 99 : 0)
+    const avgRR = closed.reduce((s, t) => s + (t.r_multiple || 0), 0) / (closed.length || 1)
     const tradesWithMistakes = closed.filter(t => Array.isArray(t.mistake_tags) && t.mistake_tags.length > 0).length
     const discipline = ((closed.length - tradesWithMistakes) / (closed.length || 1)) * 100
-    const execution = 80 
-    const consistency = 75
 
     return [
         { label: 'WINRATE', val: winrate, raw: winrate, suffix: '%' },
         { label: 'PROF. FACTOR', val: Math.min(100, (pf / 3) * 100), raw: pf, suffix: '' },
-        { label: 'AVG R/R', val: Math.min(100, (avgRR / 5) * 100), raw: avgRR, suffix: ':1' },
+        { label: 'AVG R/R', val: Math.min(100, (avgRR / 4) * 100), raw: avgRR, suffix: ':1' },
         { label: 'DISCIPLINE', val: discipline, raw: discipline, suffix: '%' },
-        { label: 'EXECUTION', val: execution, raw: execution, suffix: '%' },
-        { label: 'CONSISTENCY', val: consistency, raw: consistency, suffix: '%' }
+        { label: 'EXECUTION', val: 85, raw: 85, suffix: '%' },
+        { label: 'CONSISTENCY', val: 75, raw: 75, suffix: '%' }
     ]
   }, [trades])
 
-  const size = 220
-  const center = size / 2
-  const radius = size * 0.35
-
-  const pointsData = radarStats.map((stat, i) => {
+  const pointsData = useMemo(() => radarStats.map((stat, i) => {
     const angle = (Math.PI * 2 * i) / 6 - Math.PI / 2
     const r = (stat.val / 100) * radius
-    const x = center + r * Math.cos(angle)
-    const y = center + r * Math.sin(angle)
-    return { x, y, ...stat }
-  })
+    return {
+        x: center + r * Math.cos(angle),
+        y: center + r * Math.sin(angle),
+        lx: center + (radius + 35) * Math.cos(angle),
+        ly: center + (radius + 35) * Math.sin(angle),
+        ...stat
+    }
+  }), [radarStats, center, radius])
 
-  const polyPoints = pointsData.map(p => `${p.x},${p.y}`).join(' ')
-  const gridLevels = [0.2, 0.4, 0.6, 0.8, 1.0]
+  const polyPoints = useMemo(() => pointsData.map(p => `${p.x},${p.y}`).join(' '), [pointsData])
 
   return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', position: 'relative' }}>
+    <div className="card performance-radar-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', position: 'relative' }}>
+      <style>{`
+        .radar-hitbox { cursor: pointer; pointer-events: all; }
+        .radar-hitbox .dot { transition: all 0.15s ease; fill: var(--accent-bright); opacity: 0.4; }
+        .radar-hitbox text { transition: all 0.15s ease; fill: var(--text-primary); opacity: 0.8; }
+        
+        .radar-hitbox:hover .dot { r: 5; fill: #fff; opacity: 1; stroke: var(--accent); stroke-width: 2; }
+        .radar-hitbox:hover text { fill: var(--accent-bright); opacity: 1; font-size: 9px; font-weight: 950; }
+        
+        .radar-center-display { display: none; pointer-events: none; }
+        .radar-hitbox:hover ~ .radar-center-display { display: block; }
+        
+        /* Show only the correct text in the center based on which hitbox is hovered */
+        .radar-hitbox-0:hover ~ .radar-center-display .val-0 { display: block; }
+        .radar-hitbox-1:hover ~ .radar-center-display .val-1 { display: block; }
+        .radar-hitbox-2:hover ~ .radar-center-display .val-2 { display: block; }
+        .radar-hitbox-3:hover ~ .radar-center-display .val-3 { display: block; }
+        .radar-hitbox-4:hover ~ .radar-center-display .val-4 { display: block; }
+        .radar-hitbox-5:hover ~ .radar-center-display .val-5 { display: block; }
+        
+        .center-val-text { display: none; }
+      `}</style>
+
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-bright)' }}>
         <RadarIcon size={18}/>
         <span style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.05em' }}>PERFORMANCE RADAR</span>
@@ -56,95 +86,62 @@ export default function PerformanceRadar() {
 
       <div style={{ display: 'flex', justifyContent: 'center', padding: '1.5rem 0' }}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ overflow: 'visible' }}>
-          {gridLevels.map(lvl => (
-            <polygon
-              key={lvl}
-              points={Array.from({ length: 6 }).map((_, i) => {
-                const angle = (Math.PI * 2 * i) / 6 - Math.PI / 2
-                const r = radius * lvl
-                return `${center + r * Math.cos(angle)},${center + r * Math.sin(angle)}`
-              }).join(' ')}
-              fill="none"
-              stroke="var(--border-subtle)"
-              strokeWidth="1"
-            />
+          {/* Grid levels */}
+          {[0.2, 0.4, 0.6, 0.8, 1.0].map(lvl => (
+            <polygon key={lvl} points={Array.from({ length: 6 }).map((_, i) => {
+                const a = (Math.PI * 2 * i) / 6 - Math.PI / 2; const r = radius * lvl
+                return `${center + r * Math.cos(a)},${center + r * Math.sin(a)}`
+              }).join(' ')} fill="none" stroke="var(--border-subtle)" strokeWidth="1" style={{ opacity: 0.3 }} />
           ))}
           
+          {/* Grid lines */}
           {Array.from({ length: 6 }).map((_, i) => {
-            const angle = (Math.PI * 2 * i) / 6 - Math.PI / 2
-            return (
-              <line
-                key={i}
-                x1={center} y1={center}
-                x2={center + radius * Math.cos(angle)}
-                y2={center + radius * Math.sin(angle)}
-                stroke="var(--border-subtle)"
-                strokeWidth="1"
-              />
-            )
+            const a = (Math.PI * 2 * i) / 6 - Math.PI / 2
+            return <line key={i} x1={center} y1={center} x2={center + radius * Math.cos(a)} y2={center + radius * Math.sin(a)} stroke="var(--border-subtle)" strokeWidth="1" style={{ opacity: 0.3 }} />
           })}
 
-          <polygon
-            points={polyPoints}
-            fill="var(--accent-dim)"
-            stroke="var(--accent)"
-            strokeWidth="2"
-            style={{ opacity: 0.6, transition: 'all 0.3s ease' }}
-          />
+          <polygon points={polyPoints} fill="var(--accent-dim)" stroke="var(--accent)" strokeWidth="2" style={{ opacity: 0.5, pointerEvents: 'none' }} />
 
-          {/* SUBTLE INTERACTIVE POINTS */}
+          {/* Hitboxes and Points */}
           {pointsData.map((p, i) => (
-            <g key={i} onMouseEnter={() => setHoveredIdx(i)} onMouseLeave={() => setHoveredIdx(null)}>
-                <circle 
-                    cx={p.x} cy={p.y} r={hoveredIdx === i ? 5 : 3} 
-                    fill="var(--accent-bright)" 
-                    stroke="var(--accent)" strokeWidth="1"
-                    style={{ cursor: 'pointer', transition: 'all 0.2s ease', opacity: hoveredIdx === i ? 1 : 0.6 }}
-                />
-                
-                <text
-                    x={center + (radius + 35) * Math.cos((Math.PI * 2 * i) / 6 - Math.PI / 2)}
-                    y={center + (radius + 35) * Math.sin((Math.PI * 2 * i) / 6 - Math.PI / 2)}
-                    textAnchor="middle"
-                    fontSize="9"
-                    fontWeight="900"
-                    fill="var(--text-primary)"
-                    dominantBaseline="middle"
-                    style={{ transition: 'opacity 0.2s', opacity: hoveredIdx === null || hoveredIdx === i ? 1 : 0.2 }}
-                >
+            <g key={i} className={`radar-hitbox radar-hitbox-${i}`}>
+                {/* Invisible large hit area for magnetic feel */}
+                <circle cx={p.x} cy={p.y} r="18" fill="transparent" />
+                <circle className="dot" cx={p.x} cy={p.y} r="2.5" />
+                <text x={p.lx} y={p.ly} textAnchor="middle" fontSize="8" fontWeight="900" dominantBaseline="middle">
                     {p.label}
                 </text>
             </g>
           ))}
 
-          {hoveredIdx !== null && (
-              <g style={{ pointerEvents: 'none' }}>
-                  <rect 
-                    x={center - 40} y={center - 15} width="80" height="30" 
-                    rx="6" fill="var(--bg-card)" stroke="var(--accent)" strokeWidth="1"
-                    style={{ filter: 'drop-shadow(0 5px 15px rgba(0,0,0,0.5))' }}
-                  />
-                  <text 
-                    x={center} y={center + 4} textAnchor="middle" 
-                    fontSize="11" fontWeight="950" fill="var(--text-primary)"
-                  >
-                    {radarStats[hoveredIdx].raw.toFixed(2)}{radarStats[hoveredIdx].suffix}
+          {/* Central Information Hub */}
+          <g className="radar-center-display">
+              <rect x={center - 35} y={center - 12} width="70" height="24" rx="4" fill="rgba(10, 10, 18, 0.98)" stroke="var(--accent)" strokeWidth="1" />
+              {radarStats.map((s, i) => (
+                  <text key={i} className={`center-val-text val-${i}`} x={center} y={center + 4} textAnchor="middle" fontSize="10" fontWeight="950" fill="#fff">
+                      {s.raw.toFixed(1)}{s.suffix}
                   </text>
-              </g>
-          )}
+              ))}
+          </g>
         </svg>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.5rem' }}>
-          <div style={{ padding: '0.5rem', background: 'var(--bg-secondary)', borderRadius: '8px', textAlign: 'center', border: '1px solid var(--border-subtle)' }}>
-              <div style={{ fontSize: '0.5rem', fontWeight: 800, color: 'var(--text-muted)' }}>DOMINANT</div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--green)' }}>Discipline</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+          <div style={{ padding: '0.4rem', background: 'var(--bg-secondary)', borderRadius: '6px', textAlign: 'center', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ fontSize: '0.45rem', fontWeight: 800, color: 'var(--text-muted)' }}>TOP STRENGTH</div>
+              <div style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--green)' }}>
+                {radarStats.reduce((p, c) => (p.val > c.val) ? p : c).label}
+              </div>
           </div>
-          <div style={{ padding: '0.5rem', background: 'var(--bg-secondary)', borderRadius: '8px', textAlign: 'center', border: '1px solid var(--border-subtle)' }}>
-              <div style={{ fontSize: '0.5rem', fontWeight: 800, color: 'var(--text-muted)' }}>GROWTH OP</div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--red)' }}>Avg R/R</div>
+          <div style={{ padding: '0.4rem', background: 'var(--bg-secondary)', borderRadius: '6px', textAlign: 'center', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ fontSize: '0.45rem', fontWeight: 800, color: 'var(--text-muted)' }}>UPGRADE PATH</div>
+              <div style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--red)' }}>
+                {radarStats.reduce((p, c) => (p.val < c.val) ? p : c).label}
+              </div>
           </div>
       </div>
     </div>
   )
-}
+})
+
+export default PerformanceRadar;

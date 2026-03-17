@@ -23,10 +23,11 @@ export default function PlaybookEfficiency() {
 
     return Object.entries(ruleStats)
       .map(([name, stats]) => ({
-        name,
+        name: name.replace(/[\[\]\"']/g, '').trim(),
         winRate: (stats.wins / stats.total) * 100,
         sampleSize: stats.total
       }))
+      .filter(rule => rule.name.length > 0 && rule.name !== 'null')
       .sort((a, b) => b.winRate - a.winRate)
   }, [trades])
 

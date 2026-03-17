@@ -138,6 +138,29 @@ pub async fn init_db(pool: &SqlitePool) -> Result<()> {
     // Migration: Add estimate if it doesn't exist
     let _ = sqlx::query("ALTER TABLE economic_events ADD COLUMN estimate TEXT").execute(pool).await;
 
+    // --- SEED DEMO ACCOUNT ---
+    let demo_email = "demo@mail.com";
+    let demo_user = sqlx::query("SELECT id FROM users WHERE email = ?")
+        .bind(demo_email)
+        .fetch_optional(pool)
+        .await?;
+
+    if demo_user.is_none() {
+        let demo_id = "demo-user-id";
+        let demo_pass = crate::auth::hash_password("test")?;
+        
+        sqlx::query("INSERT INTO users (id, username, email, password_hash) VALUES (?, ?, ?, ?)")
+            .bind(demo_id).bind("DemoTrader").bind(demo_email).bind(demo_pass)
+            .execute(pool).await?;
+            
+        // Create a default account for the demo user
+        sqlx::query("INSERT INTO accounts (id, user_id, name, account_type, balance, currency) VALUES (?, ?, ?, ?, ?, ?)")
+            .bind("demo-acc-1").bind(demo_id).bind("Demo Prop Account").bind("Prop-Firm").bind(100000.0).bind("USD")
+            .execute(pool).await?;
+            
+        tracing::info!("Demo account seeded: {} / test", demo_email);
+    }
+
     Ok(())
 }
 

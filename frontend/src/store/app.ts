@@ -214,11 +214,26 @@ const MOCK_PULSES: Pulse[] = [
     { id: 'p1', account_id: '1', mental_state: 'Focused', emotional_rating: 8, notes: 'Feeling calm', created_at: new Date().toISOString(), tags: [] }
 ];
 
+const cleanTags = (val: any): string[] => {
+  if (!val) return [];
+  // Handle strings like '["Tag1","Tag2"]' or '"Tag1,Tag2"' or actual arrays
+  let rawStr = typeof val === 'string' ? val : JSON.stringify(val);
+  
+  // Strip typical JSON bracket/quote artifacts
+  rawStr = rawStr.replace(/[\[\]\"']/g, '');
+  
+  // Split by comma or semicolon and clean up each entry
+  return rawStr.split(/[,,;]/)
+    .map(s => s.trim())
+    .filter(s => s.length > 0 && s !== 'null' && s !== 'undefined');
+};
+
 const normalizeTrade = (t: any): Trade => ({
   ...t,
   status: String(t.status).toUpperCase() as 'OPEN' | 'CLOSED',
+  tags: cleanTags(t.tags),
+  mistake_tags: cleanTags(t.mistake_tags),
   images: typeof t.images === 'string' ? (t.images ? t.images.split(',') : []) : (Array.isArray(t.images) ? t.images : []),
-  mistake_tags: typeof t.mistake_tags === 'string' ? (t.mistake_tags ? t.mistake_tags.split(',') : []) : (Array.isArray(t.mistake_tags) ? t.mistake_tags : []),
 })
 
 // Configuration for API and WebSocket
