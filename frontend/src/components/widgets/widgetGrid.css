@@ -1,0 +1,626 @@
+/* ============================================================
+   WIDGET GRID CSS – Scoped styles for the widget grid system
+   Ported from Widget sample project/css/dashboard.css
+   Prefix: .wg- to avoid conflicts with existing app styles
+   ============================================================ */
+
+/* --- Widget Grid Container --- */
+.wg-grid-container {
+    position: relative;
+    padding: 24px;
+    min-height: calc(100vh - 140px);
+    transition: all 0.3s cubic-bezier(0.2, 1, 0.3, 1);
+}
+
+/* --- Widget Cards --- */
+.wg-widget-card {
+    position: absolute;
+    background: transparent;
+    border: none;
+    border-radius: 16px;
+    overflow: visible;
+    transition: all 0.3s cubic-bezier(0.2, 1, 0.3, 1);
+    box-shadow: none;
+}
+
+/* Iframe container */
+.wg-widget-content {
+    width: 100%;
+    height: 100%;
+    border: none;
+    overflow: hidden;
+}
+
+.wg-widget-content iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    background: transparent;
+}
+
+/* --- Widget Drag Header (visible in edit mode) --- */
+.wg-drag-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 32px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    z-index: 10;
+    background: linear-gradient(180deg, rgba(168, 85, 247, 0.12) 0%, transparent 100%);
+    border-bottom: 1px solid rgba(168, 85, 247, 0.1);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    transition: all 0.15s ease;
+}
+
+.wg-drag-handle:active {
+    cursor: grabbing;
+}
+
+.wg-drag-dots {
+    display: flex;
+    gap: 3px;
+}
+
+.wg-drag-dots span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(168, 85, 247, 0.5);
+}
+
+/* --- Resize Handle --- */
+.wg-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    cursor: nwse-resize;
+    z-index: 10;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.wg-resize-handle::before {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid #a855f7;
+    border-bottom: 2px solid #a855f7;
+    opacity: 0.6;
+}
+
+/* --- Widget Actions (delete — edit mode only) --- */
+.wg-widget-actions {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: none;
+    gap: 4px;
+    z-index: 10;
+}
+
+.wg-action-btn {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    color: #a1a1aa;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 14px;
+}
+
+.wg-action-btn:hover {
+    background: rgba(168, 85, 247, 0.2);
+    border-color: #a855f7;
+    color: #f0f0f2;
+}
+
+.wg-action-btn.wg-delete:hover {
+    background: rgba(255, 51, 102, 0.2);
+    border-color: #ff3366;
+    color: #ff3366;
+}
+
+/* ============================================================
+   EDIT MODE STYLES
+   ============================================================ */
+body.wg-edit-mode .wg-grid-container {
+    background-image: radial-gradient(circle, rgba(168, 85, 247, 0.12) 1px, transparent 1px);
+    background-size: calc(100% / 12) 88px;
+    background-position: 0 0;
+}
+
+body.wg-edit-mode .wg-widget-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px dashed rgba(168, 85, 247, 0.25);
+    border-radius: 16px;
+    pointer-events: none;
+    z-index: 50;
+}
+
+body.wg-edit-mode .wg-drag-handle {
+    display: flex;
+}
+
+body.wg-edit-mode .wg-resize-handle {
+    display: block;
+}
+
+body.wg-edit-mode .wg-widget-card:hover .wg-resize-handle {
+    opacity: 1;
+}
+
+body.wg-edit-mode .wg-widget-actions {
+    display: flex;
+}
+
+body.wg-edit-mode .wg-widget-card {
+    cursor: default;
+}
+
+/* Disable iframe interactions during edit mode */
+body.wg-edit-mode .wg-widget-content iframe {
+    pointer-events: none;
+}
+
+/* Dragging state */
+.wg-widget-card.wg-dragging {
+    z-index: 500 !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6),
+                0 0 30px rgba(168, 85, 247, 0.35);
+    transform: scale(1.02);
+    opacity: 0.9;
+    transition: box-shadow 0.2s, opacity 0.2s !important;
+}
+
+.wg-widget-card.wg-dragging::before {
+    border: 2px solid #a855f7 !important;
+}
+
+.wg-widget-card.wg-dragging .wg-drag-handle {
+    cursor: grabbing;
+}
+
+/* Resizing state */
+.wg-widget-card.wg-resizing {
+    z-index: 500 !important;
+    box-shadow: 0 0 25px rgba(168, 85, 247, 0.35);
+}
+
+.wg-widget-card.wg-resizing::before {
+    border: 2px solid #a855f7 !important;
+}
+
+/* ============================================================
+   GHOST / SNAP PREVIEW ELEMENT
+   ============================================================ */
+.wg-grid-ghost {
+    position: absolute;
+    border: 2px dashed #a855f7;
+    border-radius: 16px;
+    background: rgba(168, 85, 247, 0.05);
+    box-shadow: 0 0 25px rgba(168, 85, 247, 0.2),
+                inset 0 0 25px rgba(168, 85, 247, 0.05);
+    pointer-events: none;
+    z-index: 400;
+    transition: left 0.15s ease, top 0.15s ease, width 0.15s ease, height 0.15s ease;
+}
+
+/* ============================================================
+   WIDGET TOOLBAR (within page, not the topbar)
+   ============================================================ */
+.wg-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    margin-bottom: 8px;
+}
+
+.wg-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.wg-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wg-toolbar-title {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #a855f7, #d8b4fe);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.wg-edit-indicator {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #a855f7;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    animation: wg-pulse-text 2s ease-in-out infinite;
+}
+
+body.wg-edit-mode .wg-edit-indicator {
+    display: flex;
+}
+
+.wg-edit-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #a855f7;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.35);
+    animation: wg-pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes wg-pulse-dot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 10px rgba(168, 85, 247, 0.35); }
+    50% { opacity: 0.5; box-shadow: 0 0 20px rgba(168, 85, 247, 0.35); }
+}
+
+@keyframes wg-pulse-text {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Toolbar Buttons */
+.wg-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    color: #a1a1aa;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.wg-btn:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: #f0f0f2;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.wg-btn:active {
+    transform: scale(0.97);
+}
+
+.wg-btn-icon {
+    font-size: 16px;
+}
+
+.wg-btn-primary {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border-color: #a855f7;
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(168, 85, 247, 0.25);
+}
+
+.wg-btn-primary:hover {
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+    color: #fff;
+    border-color: #a855f7;
+}
+
+.wg-btn-save {
+    background: linear-gradient(135deg, #059669, #10b981);
+    border-color: #10b981;
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(16, 185, 129, 0.25);
+}
+
+.wg-btn-save:hover {
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+    color: #fff;
+}
+
+.wg-btn-danger {
+    color: #ff3366;
+    border-color: rgba(255, 51, 102, 0.2);
+}
+
+.wg-btn-danger:hover {
+    background: rgba(255, 51, 102, 0.08);
+    border-color: rgba(255, 51, 102, 0.4);
+}
+
+.wg-toolbar-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.06);
+    margin: 0 4px;
+}
+
+/* ============================================================
+   WIDGET LIBRARY DRAWER
+   ============================================================ */
+.wg-library-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.wg-library-overlay.wg-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.wg-library-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 380px;
+    height: 100%;
+    background: rgba(12, 12, 16, 0.95);
+    backdrop-filter: blur(24px);
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+    z-index: 2001;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+}
+
+.wg-library-drawer.wg-open {
+    transform: translateX(0);
+}
+
+.wg-library-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.wg-library-header h2 {
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #a855f7;
+}
+
+.wg-library-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.03);
+    color: #a1a1aa;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 18px;
+}
+
+.wg-library-close:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #f0f0f2;
+}
+
+.wg-library-search {
+    padding: 12px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    flex-shrink: 0;
+}
+
+.wg-library-search input {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    color: #f0f0f2;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: all 0.15s ease;
+}
+
+.wg-library-search input::placeholder {
+    color: #555;
+}
+
+.wg-library-search input:focus {
+    border-color: #a855f7;
+    background: rgba(168, 85, 247, 0.05);
+}
+
+.wg-library-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Scrollbar Styling */
+.wg-library-list::-webkit-scrollbar {
+    width: 6px;
+}
+.wg-library-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+.wg-library-list::-webkit-scrollbar-thumb {
+    background: rgba(168, 85, 247, 0.2);
+    border-radius: 3px;
+}
+
+/* --- Library Card --- */
+.wg-library-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.wg-library-item:hover {
+    background: rgba(168, 85, 247, 0.06);
+    border-color: rgba(168, 85, 247, 0.2);
+    transform: translateX(-4px);
+}
+
+.wg-library-item-preview {
+    width: 64px;
+    height: 48px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.wg-library-item-preview iframe {
+    width: 400%;
+    height: 400%;
+    border: none;
+    transform: scale(0.25);
+    transform-origin: top left;
+    pointer-events: none;
+}
+
+.wg-library-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.wg-library-item-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f0f0f2;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wg-library-item-meta {
+    font-size: 10px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.wg-library-item-add {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    background: rgba(168, 85, 247, 0.08);
+    color: #a855f7;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.wg-library-item-add:hover {
+    background: #a855f7;
+    color: #fff;
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.35);
+}
+
+/* ============================================================
+   TOAST NOTIFICATIONS
+   ============================================================ */
+.wg-toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 5000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wg-toast {
+    padding: 12px 20px;
+    background: rgba(15, 15, 20, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    color: #f0f0f2;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: wg-toast-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: 350px;
+}
+
+.wg-toast.wg-success { border-color: rgba(0, 255, 163, 0.3); }
+.wg-toast.wg-success .wg-toast-icon { color: #00ffa3; }
+
+.wg-toast.wg-error { border-color: rgba(255, 51, 102, 0.3); }
+.wg-toast.wg-error .wg-toast-icon { color: #ff3366; }
+
+.wg-toast.wg-info { border-color: rgba(168, 85, 247, 0.2); }
+.wg-toast.wg-info .wg-toast-icon { color: #a855f7; }
+
+.wg-toast-icon { font-size: 18px; flex-shrink: 0; }
+
+@keyframes wg-toast-in {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Utility */
+.wg-no-select { user-select: none !important; }

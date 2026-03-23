@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novatrix Dashboard – Widget Grid System</title>
+    <meta name="description" content="Professional trading dashboard with customizable widget grid layout">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,calendar_month,category,close,dashboard_customize,download,edit,grid_view,insights,menu_book,payments,percent,radar,schedule,settings,shield,show_chart,stacks,timer,timelapse,trending_down,undo,redo,upload,vital_signs,delete,balance,verified_user,error,save" />
+
+    <!-- Dashboard CSS -->
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+    <!-- ============================================================
+         TOP NAVIGATION BAR
+         ============================================================ -->
+    <nav class="topbar">
+        <div class="topbar-left">
+            <span class="topbar-logo">NOVATRIX</span>
+            <div class="edit-indicator">
+                <span class="dot"></span>
+                <span>EDIT MODE</span>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <!-- Edit mode controls (visible when editing) -->
+            <button class="btn" id="btnUndo" title="Undo (Ctrl+Z)">
+                <span class="material-symbols-outlined btn-icon">undo</span>
+            </button>
+            <button class="btn" id="btnRedo" title="Redo (Ctrl+Y)">
+                <span class="material-symbols-outlined btn-icon">redo</span>
+            </button>
+
+            <div class="topbar-divider"></div>
+
+            <button class="btn" id="btnAddWidget" title="Add Widget">
+                <span class="material-symbols-outlined btn-icon">add</span>
+                <span class="btn-label">Add Widget</span>
+            </button>
+
+            <div class="topbar-divider"></div>
+
+            <button class="btn" id="btnExport" title="Export Layout">
+                <span class="material-symbols-outlined btn-icon">download</span>
+            </button>
+            <button class="btn" id="btnImport" title="Import Layout">
+                <span class="material-symbols-outlined btn-icon">upload</span>
+            </button>
+            <button class="btn btn-danger" id="btnResetLayout" title="Reset Layout">
+                <span class="material-symbols-outlined btn-icon">delete</span>
+            </button>
+
+            <div class="topbar-divider"></div>
+
+            <button class="btn btn-save" id="btnSave" title="Save Layout">
+                <span class="material-symbols-outlined btn-icon">save</span>
+                <span class="btn-label">Save</span>
+            </button>
+
+            <button class="btn btn-primary" id="btnCustomize" title="Toggle Edit Mode">
+                <span class="material-symbols-outlined btn-icon">dashboard_customize</span>
+                <span class="btn-label">Customize</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ============================================================
+         GRID CONTAINER
+         ============================================================ -->
+    <main class="grid-container" id="gridContainer">
+        <!-- Ghost Element (snap preview) -->
+        <div class="grid-ghost" id="gridGhost"></div>
+
+        <!-- Widgets are injected here dynamically by app.js -->
+    </main>
+
+    <!-- ============================================================
+         WIDGET LIBRARY DRAWER
+         ============================================================ -->
+    <div class="library-overlay" id="libraryOverlay"></div>
+    <aside class="library-drawer" id="libraryDrawer">
+        <div class="library-header">
+            <h2>Widget Library</h2>
+            <button class="library-close" id="libraryClose">✕</button>
+        </div>
+        <div class="library-search">
+            <input type="text" id="librarySearchInput" placeholder="Search widgets...">
+        </div>
+        <div class="library-list" id="libraryList">
+            <!-- Library items populated by app.js -->
+        </div>
+    </aside>
+
+    <!-- ============================================================
+         TOAST NOTIFICATIONS
+         ============================================================ -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ============================================================
+         SCRIPTS (Order matters: dependencies first)
+         ============================================================ -->
+    <script src="js/widget-library.js"></script>
+    <script src="js/grid-engine.js"></script>
+    <script src="js/persistence.js"></script>
+    <script src="js/edit-mode.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+</html>
