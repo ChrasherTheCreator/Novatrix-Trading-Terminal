@@ -100,7 +100,7 @@ export default function SessionAnalysis() {
                 </div>
 
                 {heatmapData.map((row, dIdx) => (
-                    <div key={dIdx} style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                    <div key={dIdx} style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
                         <div style={{ width: '40px', fontSize: '0.6rem', fontWeight: 900, color: 'var(--text-muted)' }}>{days[dIdx]}</div>
                         <div style={{ flex: 1, display: 'flex', gap: '2px' }}>
                             {row.map((val, hIdx) => (

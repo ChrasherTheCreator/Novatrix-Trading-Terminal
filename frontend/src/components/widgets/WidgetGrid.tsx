@@ -4,6 +4,7 @@
    ============================================================ */
 
 import { useRef, useEffect, useCallback, useState } from 'react';
+import { createPortal } from 'react-dom';
 import './widgetGrid.css';
 import { useGridEngine } from './useGridEngine';
 import { useEditMode } from './useEditMode';
@@ -178,28 +179,52 @@ export default function WidgetGrid({ tabId }: WidgetGridProps) {
 
   // Calculate container height
   const containerHeight = engine.getContainerHeight();
+  
+  const portalNode = document.getElementById('widget-toolbar-portal');
+
+  const toolbarNode = (
+    <WidgetToolbar
+      editActive={editMode.editActive}
+      onToggleEdit={editMode.toggleEditMode}
+      onAddWidget={() => setLibraryOpen(true)}
+      onUndo={editMode.undo}
+      onRedo={editMode.redo}
+      onSave={handleSave}
+      onExport={handleExport}
+      onImport={handleImport}
+      onReset={handleReset}
+      onApplyUndoRedo={handleApplyUndoRedo}
+      showToast={showToast}
+    />
+  );
 
   return (
     <div className="fade-in">
-      <WidgetToolbar
-        editActive={editMode.editActive}
-        onToggleEdit={editMode.toggleEditMode}
-        onAddWidget={() => setLibraryOpen(true)}
-        onUndo={editMode.undo}
-        onRedo={editMode.redo}
-        onSave={handleSave}
-        onExport={handleExport}
-        onImport={handleImport}
-        onReset={handleReset}
-        onApplyUndoRedo={handleApplyUndoRedo}
-        showToast={showToast}
-      />
+      {portalNode ? createPortal(toolbarNode, portalNode) : toolbarNode}
 
-      <div
-        ref={containerRef}
-        className="wg-grid-container"
-        style={{ minHeight: containerHeight }}
+      <div 
+        style={{
+          width: '100%',
+          height: `${containerHeight * engine.getMetrics().scale}px`,
+          position: 'relative',
+          overflow: 'hidden'
+        }}
       >
+        <div
+          ref={containerRef}
+          className={`wg-grid-container ${editMode.editActive ? 'wg-edit-mode' : ''}`}
+          style={{ 
+            minHeight: containerHeight,
+            transform: `scale(${engine.getMetrics().scale})`,
+            transformOrigin: 'top left',
+            width: '1894px', // (14 * 117 + 13 * 16) + (24 * 2) = 1846 + 48
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            padding: '24px',
+            boxSizing: 'border-box'
+          }}
+        >
         {/* Ghost Element */}
         <div className="wg-grid-ghost" style={editMode.ghostStyle} />
 
@@ -226,6 +251,7 @@ export default function WidgetGrid({ tabId }: WidgetGridProps) {
             />
           );
         })}
+        </div>
       </div>
 
       {/* Widget Library Drawer */}

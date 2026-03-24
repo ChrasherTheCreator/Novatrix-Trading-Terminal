@@ -20,6 +20,7 @@ export default function WidgetCard({
   instanceId, widgetId, style,
   onStartDrag, onStartResize, onRemove, containerRef
 }: WidgetCardProps) {
+  const { left, top, width, height } = style;
   const def = getWidgetDef(widgetId);
   const cardRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -120,8 +121,11 @@ export default function WidgetCard({
       className="wg-widget-card"
       data-instance-id={instanceId}
       data-widget-id={widgetId}
-      style={style}
+      style={{ left, top, width, height }}
     >
+      {/* Permanent Border & Background */}
+      <div className="wg-widget-border" />
+
       {/* Drag Handle */}
       <div
         className="wg-drag-handle"

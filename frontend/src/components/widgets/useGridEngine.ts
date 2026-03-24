@@ -3,7 +3,7 @@
    Ported from Widget sample project/js/grid-engine.js
    ============================================================ */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 import { getWidgetDef, type LayoutItem } from './widgetRegistry';
 
 export interface WidgetInstance {
@@ -26,22 +26,41 @@ export function useGridEngine(containerRef: React.RefObject<HTMLDivElement | nul
   const [widgets, setWidgets] = useState<Map<string, WidgetInstance>>(new Map());
   const nextIdRef = useRef(1);
 
-  const getMetrics = useCallback((): GridMetrics => {
-    const columns = 12;
+  const [containerW, setContainerW] = useState(1400);
+
+  // Keep track of container width for responsive grid
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerW(containerRef.current.clientWidth);
+      }
+    };
+    window.addEventListener('resize', updateWidth);
+    updateWidth(); // Init
+    return () => window.removeEventListener('resize', updateWidth);
+  }, [containerRef]);
+
+  const getMetrics = useCallback((): GridMetrics & { scale: number } => {
+    const columns = 14;
+    const gap = 16;
+    const padding = 24;
     const colWidth = 117;
     const rowHeight = 72;
-    const gap = 16;
-    const containerW = containerRef.current?.clientWidth || 1400;
-    const totalGridWidth = (columns * colWidth) + ((columns - 1) * gap);
-    const padding = Math.max(24, Math.floor((containerW - totalGridWidth) / 2));
-    return { columns, colWidth, rowHeight, gap, padding };
-  }, [containerRef]);
+    
+    // Total width including padding
+    const staticGridWidth = (columns * colWidth) + ((columns - 1) * gap) + (padding * 2);
+    const availableWidth = Math.max(800, containerW);
+    
+    const scale = availableWidth / staticGridWidth;
+
+    return { columns, colWidth, rowHeight, gap, padding, scale };
+  }, [containerW]);
 
   const colRowToPixel = useCallback((col: number, row: number) => {
     const m = getMetrics();
     return {
       x: m.padding + col * (m.colWidth + m.gap),
-      y: row * (m.rowHeight + m.gap)
+      y: m.padding + row * (m.rowHeight + m.gap)
     };
   }, [getMetrics]);
 
@@ -56,7 +75,7 @@ export function useGridEngine(containerRef: React.RefObject<HTMLDivElement | nul
   const snapToGrid = useCallback((x: number, y: number, w: number, h: number) => {
     const m = getMetrics();
     let col = Math.round((x - m.padding) / (m.colWidth + m.gap));
-    let row = Math.round(y / (m.rowHeight + m.gap));
+    let row = Math.round((y - m.padding) / (m.rowHeight + m.gap));
     col = Math.max(0, Math.min(col, m.columns - w));
     row = Math.max(0, row);
     return { col, row };
@@ -225,10 +244,10 @@ export function useGridEngine(containerRef: React.RefObject<HTMLDivElement | nul
     const m = getMetrics();
     let maxBottom = 0;
     widgets.forEach(w => {
-      const bottom = (w.row + w.h) * (m.rowHeight + m.gap);
+      const bottom = m.padding + (w.row + w.h) * (m.rowHeight + m.gap);
       if (bottom > maxBottom) maxBottom = bottom;
     });
-    return maxBottom + m.padding * 2;
+    return maxBottom + m.padding;
   }, [getMetrics, widgets]);
 
   return {

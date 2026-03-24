@@ -40,6 +40,9 @@ export default function Topbar() {
       </div>
 
       <div className="topbar-right">
+        {/* Portal for Widget Toolbar */}
+        <div id="widget-toolbar-portal" style={{ display: 'flex', alignItems: 'center', marginRight: '8px' }}></div>
+
         <div className="search-bar">
           <Search size={16} />
           <input type="text" placeholder="Global Search..." />

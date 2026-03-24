@@ -132,8 +132,8 @@ export const WIDGET_REGISTRY: WidgetDef[] = [
   },
   {
     id: 'temporal-heatmap', name: 'Temporal P&L Heatmap', icon: 'grid_view', category: 'Charts',
-    src: '/widgets/temporal p&l heatmap.html',
-    defaultW: 6, defaultH: 6, minW: 6, minH: 6, maxW: 6, maxH: 6, scalable: false
+    src: '/widgets/temporal p&l heatmap.html?v=4',
+    defaultW: 6, defaultH: 4, minW: 6, minH: 4, maxW: 6, maxH: 6, scalable: false
   }
 ];
 
@@ -160,7 +160,7 @@ export const DEFAULT_DASHBOARD_LAYOUT: LayoutItem[] = [
   { widgetId: 'asset-performance', col: 8,  row: 8,  w: 4, h: 4 },
 
   { widgetId: 'trading-calendar',  col: 0,  row: 12, w: 6, h: 10 },
-  { widgetId: 'temporal-heatmap',  col: 6,  row: 12, w: 6, h: 6 },
+  { widgetId: 'temporal-heatmap',  col: 6,  row: 12, w: 6, h: 4 },
 ];
 
 /* Default Analytics Layout */
@@ -189,5 +189,5 @@ export const DEFAULT_ANALYTICS_LAYOUT: LayoutItem[] = [
 
   { widgetId: 'trading-sessions',     col: 0,  row: 18, w: 4, h: 4 },
   { widgetId: 'trading-calendar',     col: 4,  row: 18, w: 6, h: 10 },
-  { widgetId: 'temporal-heatmap',     col: 0,  row: 22, w: 6, h: 6 },
+  { widgetId: 'temporal-heatmap',     col: 0,  row: 22, w: 6, h: 4 },
 ];

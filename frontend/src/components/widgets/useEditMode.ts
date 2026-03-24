@@ -32,7 +32,7 @@ interface UseEditModeOptions {
   snapToGrid: (x: number, y: number, w: number, h: number) => { col: number; row: number };
   colRowToPixel: (col: number, row: number) => { x: number; y: number };
   sizeToPixel: (w: number, h: number) => { width: number; height: number };
-  getMetrics: () => { colWidth: number; rowHeight: number; gap: number; columns: number; padding: number };
+  getMetrics: () => { colWidth: number; rowHeight: number; gap: number; columns: number; padding: number; scale?: number };
   getWidget: (instanceId: string) => { widgetId: string; col: number; row: number; w: number; h: number } | undefined;
 }
 
@@ -105,11 +105,12 @@ export function useEditMode(opts: UseEditModeOptions) {
     pushUndo();
 
     const rect = el.getBoundingClientRect();
+    const scale = opts.getMetrics().scale || 1;
     dragRef.current = {
       active: true,
       instanceId,
-      offsetX: mouseX - rect.left,
-      offsetY: mouseY - rect.top,
+      offsetX: (mouseX - rect.left) / scale,
+      offsetY: (mouseY - rect.top) / scale,
       startCol: widget.col,
       startRow: widget.row,
     };
@@ -130,11 +131,12 @@ export function useEditMode(opts: UseEditModeOptions) {
 
     pushUndo();
 
+    const scale = opts.getMetrics().scale || 1;
     resizeRef.current = {
       active: true,
       instanceId,
-      startX: mouseX,
-      startY: mouseY,
+      startX: mouseX / scale,
+      startY: mouseY / scale,
       startW: widget.w,
       startH: widget.h,
     };
@@ -147,9 +149,10 @@ export function useEditMode(opts: UseEditModeOptions) {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (dragRef.current.active && dragElRef.current && containerElRef.current) {
+        const scale = opts.getMetrics().scale || 1;
         const containerRect = containerElRef.current.getBoundingClientRect();
-        const posX = e.clientX - containerRect.left - dragRef.current.offsetX;
-        const posY = e.clientY - containerRect.top + window.scrollY - dragRef.current.offsetY;
+        const posX = (e.clientX - containerRect.left) / scale - dragRef.current.offsetX;
+        const posY = (e.clientY - containerRect.top) / scale - dragRef.current.offsetY;
 
         dragElRef.current.style.left = posX + 'px';
         dragElRef.current.style.top = posY + 'px';
@@ -163,8 +166,9 @@ export function useEditMode(opts: UseEditModeOptions) {
 
       if (resizeRef.current.active && dragElRef.current) {
         const m = opts.getMetrics();
-        const deltaX = e.clientX - resizeRef.current.startX;
-        const deltaY = e.clientY - resizeRef.current.startY;
+        const scale = m.scale || 1;
+        const deltaX = (e.clientX / scale) - resizeRef.current.startX;
+        const deltaY = (e.clientY / scale) - resizeRef.current.startY;
         const cellW = m.colWidth + m.gap;
         const cellH = m.rowHeight + m.gap;
         const newW = resizeRef.current.startW + Math.round(deltaX / cellW);
@@ -192,13 +196,22 @@ export function useEditMode(opts: UseEditModeOptions) {
           el.style.zIndex = '';
         }
 
+        const scale = opts.getMetrics().scale || 1;
         const containerRect = containerElRef.current.getBoundingClientRect();
-        const posX = e.clientX - containerRect.left - dragRef.current.offsetX;
-        const posY = e.clientY - containerRect.top + window.scrollY - dragRef.current.offsetY;
+        const posX = (e.clientX - containerRect.left) / scale - dragRef.current.offsetX;
+        const posY = (e.clientY - containerRect.top) / scale - dragRef.current.offsetY;
 
         const widget = opts.getWidget(dragRef.current.instanceId!);
         if (widget) {
           const snap = opts.snapToGrid(posX, posY, widget.w, widget.h);
+          
+          // Force apply snapped pixels immediately to DOM to avoid 'willkürlich' placement
+          if (el) {
+            const snappedPx = opts.colRowToPixel(snap.col, snap.row);
+            el.style.left = snappedPx.x + 'px';
+            el.style.top = snappedPx.y + 'px';
+          }
+
           opts.onMove(dragRef.current.instanceId!, snap.col, snap.row);
         }
 
@@ -211,15 +224,21 @@ export function useEditMode(opts: UseEditModeOptions) {
         const el = dragElRef.current;
         if (el) {
           el.classList.remove('wg-resizing');
-          el.style.width = '';
-          el.style.height = '';
         }
 
         const m = opts.getMetrics();
-        const deltaX = e.clientX - resizeRef.current.startX;
-        const deltaY = e.clientY - resizeRef.current.startY;
+        const scale = m.scale || 1;
+        const deltaX = (e.clientX / scale) - resizeRef.current.startX;
+        const deltaY = (e.clientY / scale) - resizeRef.current.startY;
         const newW = resizeRef.current.startW + Math.round(deltaX / (m.colWidth + m.gap));
         const newH = resizeRef.current.startH + Math.round(deltaY / (m.rowHeight + m.gap));
+
+        // Force apply snapped pixels immediately to DOM for resize too
+        if (el) {
+          const snappedSize = opts.sizeToPixel(Math.max(1, newW), Math.max(1, newH));
+          el.style.width = snappedSize.width + 'px';
+          el.style.height = snappedSize.height + 'px';
+        }
 
         opts.onResize(resizeRef.current.instanceId!, newW, newH);
 

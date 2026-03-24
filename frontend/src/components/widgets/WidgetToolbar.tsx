@@ -53,8 +53,7 @@ export default function WidgetToolbar({
             <div className="wg-toolbar-divider" />
 
             <button className="wg-btn" title="Add Widget" onClick={onAddWidget}>
-              <span className="material-symbols-outlined wg-btn-icon">add</span>
-              <span className="wg-btn-label">Add Widget</span>
+              <span className="material-symbols-outlined wg-btn-icon">add_circle</span>
             </button>
 
             <div className="wg-toolbar-divider" />
@@ -73,18 +72,19 @@ export default function WidgetToolbar({
 
             <button className="wg-btn wg-btn-save" title="Save Layout" onClick={() => { onSave(); showToast('Layout saved', 'success'); }}>
               <span className="material-symbols-outlined wg-btn-icon">save</span>
-              <span className="wg-btn-label">Save</span>
             </button>
           </>
         )}
 
         <button
           className={`wg-btn ${editActive ? 'wg-btn-primary' : ''}`}
-          title="Toggle Edit Mode"
+          title={editActive ? 'Done Editing' : 'Customize Dashboard'}
           onClick={onToggleEdit}
         >
-          <span className="material-symbols-outlined wg-btn-icon">dashboard_customize</span>
-          <span className="wg-btn-label">{editActive ? 'Done Editing' : 'Customize'}</span>
+          <span className="material-symbols-outlined wg-btn-icon">
+            {editActive ? 'check' : 'dashboard_customize'}
+          </span>
+          <span className="wg-btn-label">{editActive ? 'Done Editing' : 'Customize Dashboard'}</span>
         </button>
       </div>
     </div>

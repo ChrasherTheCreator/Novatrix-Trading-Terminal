@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@500;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --obsidian-base: #050507;
@@ -20,101 +23,98 @@
             --border-subtle: rgba(157, 78, 221, 0.15);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            background-color: var(--obsidian-base);
+            background-color: transparent !important;
             color: #ffffff;
             font-family: 'Inter', sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
             overflow: hidden;
         }
 
-        /* Ambient Glow Background */
+        /* Ambient Glow Background - Subtle */
         body::before {
             content: '';
             position: absolute;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, var(--phosphor-glow) 0%, transparent 70%);
-            top: -150px;
-            right: -150px;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, var(--phosphor-glow) 0%, transparent 60%);
             z-index: -1;
-            filter: blur(80px);
+            filter: blur(40px);
+            opacity: 0.5;
         }
 
         .obsidian-display {
             position: relative;
-            width: 782px;
-            height: 512px;
-            margin: 0;
-            padding: 32px;
-            background: linear-gradient(145deg, var(--obsidian-surface) 0%, var(--obsidian-base) 100%);
-            border-radius: 16px;
-            border: 1px solid var(--border-subtle);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
             color: var(--text-primary);
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
             overflow: hidden;
-            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* Glass Reflection */
-        .dashboard-container::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 100px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
-            pointer-events: none;
         }
 
         .header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 24px;
+            align-items: flex-start;
+            margin-bottom: 48px;
+            margin-top: 12px;
             position: relative;
             z-index: 2;
         }
 
         .header-title h1 {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
+            /* Slightly smaller title */
             letter-spacing: -0.01em;
             color: var(--phosphor-purple);
-            margin-bottom: 8px;
-            font-weight: 600;
+            margin-bottom: 2px;
+            font-weight: 700;
         }
 
         .header-title p {
             color: #64748b;
             font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.1em;
+            /* Smaller subtext */
+            font-weight: 700;
+            letter-spacing: 0.12em;
             text-transform: uppercase;
-            margin-top: 4px;
+            margin: 0;
         }
 
         .stats-summary {
             display: flex;
-            gap: 32px;
+            gap: 24px;
+            margin-bottom: 12px;
         }
 
         .stat-label {
-            font-size: 10px;
+            font-size: 12px;
+            font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
-            margin-bottom: 4px;
-            margin-bottom: 4px;
-            margin-top: 0;
+            margin-bottom: 2px;
         }
 
         .stat-value {
-            font-size: 14px;
+            font-size: 20px;
             font-weight: 700;
         }
 
@@ -125,85 +125,118 @@
 
         .heatmap-wrapper {
             display: grid;
-            grid-template-columns: 40px max-content;
-            gap: 16px;
+            grid-template-columns: auto 1fr;
+            grid-template-rows: 20px auto;
+            gap: 12px 16px;
             position: relative;
             z-index: 2;
-            flex: 1;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .y-axis {
-            display: grid;
-            grid-template-rows: repeat(7, 23px);
-            gap: 4px;
-            width: 40px;
-            flex-shrink: 0;
-            font-size: 10px;
-            color: var(--text-muted);
-            align-items: center;
-        }
-
-        .heatmap-content {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+            width: 100%;
+            max-width: 900px;
+            min-height: 0;
+            padding: 4px;
         }
 
         .x-axis {
+            grid-row: 1;
+            grid-column: 2;
             display: grid;
-            grid-template-columns: repeat(24, 23px);
+            grid-template-columns: repeat(24, 1fr);
             gap: 4px;
-            width: max-content;
-            font-size: 10px;
+            font-size: 11px;
+            font-weight: 700;
             color: var(--text-muted);
             text-align: center;
-            margin-bottom: 6px;
+            align-items: center;
+        }
+
+        .y-axis {
+            grid-row: 2;
+            grid-column: 1;
+            display: grid;
+            grid-template-rows: repeat(7, 1fr);
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-align: right;
+            padding-right: 4px;
+        }
+
+        .y-axis div {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
         }
 
         .grid-main {
+            grid-row: 2;
+            grid-column: 2;
             display: grid;
-            grid-template-columns: repeat(24, 23px);
-            grid-template-rows: repeat(7, 23px);
+            grid-template-columns: repeat(24, 1fr);
             gap: 4px;
-            width: max-content;
-            flex-shrink: 0;
+            align-items: center;
+            justify-items: center;
         }
 
         /* Cell Styling */
         .cell {
-            width: 23px;
-            height: 23px;
-            min-width: 23px;
-            min-height: 23px;
+            width: 100%;
             aspect-ratio: 1 / 1;
-            flex-shrink: 0;
-            border-radius: 4px;
+            max-width: 40px;
+            /* Prevent oversized cells */
+            margin: 0 auto;
+            border-radius: 3px;
             background: rgba(255, 255, 255, 0.03);
             transition: all 0.2s cubic-bezier(0.2, 1, 0.3, 1);
-            cursor: crosshair;
+            cursor: pointer;
             position: relative;
-            flex-shrink: 0;
         }
 
         .cell:hover {
             transform: scale(1.4);
             z-index: 10;
-            box-shadow: 0 0px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 0px 15px rgba(0, 0, 0, 0.5);
             outline: 1px solid var(--phosphor-purple);
         }
 
         /* Data Colors */
-        .p-4 { background: var(--profit-max); box-shadow: 0 0 10px rgba(0, 255, 163, 0.3); }
-        .p-3 { background: #059669; }
-        .p-2 { background: #065f46; }
-        .p-1 { background: #064e3b; }
-        .neutral { background: rgba(255,255,255,0.05); }
-        .l-1 { background: #4c0519; }
-        .l-2 { background: #881337; }
-        .l-3 { background: #be123c; }
-        .l-4 { background: var(--loss-max); box-shadow: 0 0 10px rgba(255, 51, 102, 0.3); }
+        .p-4 {
+            background: var(--profit-max);
+            box-shadow: 0 0 10px rgba(0, 255, 163, 0.3);
+        }
+
+        .p-3 {
+            background: #059669;
+        }
+
+        .p-2 {
+            background: #065f46;
+        }
+
+        .p-1 {
+            background: #064e3b;
+        }
+
+        .neutral {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .l-1 {
+            background: #4c0519;
+        }
+
+        .l-2 {
+            background: #881337;
+        }
+
+        .l-3 {
+            background: #be123c;
+        }
+
+        .l-4 {
+            background: var(--loss-max);
+            box-shadow: 0 0 10px rgba(255, 51, 102, 0.3);
+        }
 
         /* Tooltip */
         .tooltip {
@@ -216,7 +249,7 @@
             opacity: 0;
             transition: opacity 0.2s;
             border: 1px solid var(--phosphor-purple);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
             white-space: nowrap;
             z-index: 100;
             bottom: 150%;
@@ -224,31 +257,72 @@
             transform: translateX(-50%);
         }
 
-        .cell:hover .tooltip { opacity: 1; }
+        .cell:hover .tooltip {
+            opacity: 1;
+        }
 
         .legend {
             margin-top: 32px;
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 10px;
+            font-size: 11px;
+            font-weight: 700;
             color: var(--text-muted);
         }
 
-        .legend-gradient { display: flex; gap: 4px; }
-        .legend-cell { width: 12px; height: 12px; border-radius: 2px; }
+        .legend-gradient {
+            display: flex;
+            gap: 4px;
+        }
+
+        .legend-cell {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @keyframes cellFade {
-            from { opacity: 0; transform: scale(0.5); }
-            to { opacity: 1; transform: scale(1); }
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+    <style>
+        body {
+            background: transparent !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+        }
+
+        body>div {
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
         }
     </style>
 </head>
+
 <body>
 
     <div class="obsidian-display">
@@ -258,21 +332,23 @@
                 <p>Performance Heatmap</p>
             </div>
             <div class="legend">
-            <span>Loss</span>
-            <div class="legend-gradient">
-                <div class="legend-cell l-4"></div>
-                <div class="legend-cell l-3"></div>
-                <div class="legend-cell l-2"></div>
-                <div class="legend-cell neutral"></div>
-                <div class="legend-cell p-2"></div>
-                <div class="legend-cell p-3"></div>
-                <div class="legend-cell p-4"></div>
+                <span>Loss</span>
+                <div class="legend-gradient">
+                    <div class="legend-cell l-4"></div>
+                    <div class="legend-cell l-3"></div>
+                    <div class="legend-cell l-2"></div>
+                    <div class="legend-cell neutral"></div>
+                    <div class="legend-cell p-2"></div>
+                    <div class="legend-cell p-3"></div>
+                    <div class="legend-cell p-4"></div>
+                </div>
+                <span>Profit</span>
             </div>
-            <span>Profit</span>
-        </div>
         </div>
 
         <div class="heatmap-wrapper">
+            <div class="corner-spacer"></div>
+            <div class="x-axis" id="x-axis"></div>
             <div class="y-axis">
                 <div>MON</div>
                 <div>TUE</div>
@@ -282,22 +358,19 @@
                 <div>SAT</div>
                 <div>SUN</div>
             </div>
-            <div class="heatmap-content">
-                <div class="x-axis" id="x-axis"></div>
-                <div class="grid-main" id="grid"></div>
-            </div>
+            <div class="grid-main" id="grid"></div>
         </div>
 
-        <div class="stats-summary" style="margin-top: 24px;">
-                <div class="stat-item">
-                    <div class="stat-label">Peak Performance</div>
-                    <div class="stat-value purple">Wed 14:00</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Avg Hourly Delta</div>
-                    <div class="stat-value">+$1,240.42</div>
-                </div>
+        <div class="stats-summary" style="margin-top: 56px;">
+            <div class="stat-item">
+                <div class="stat-label">Peak Performance</div>
+                <div class="stat-value purple">Wed 14:00</div>
             </div>
+            <div class="stat-item">
+                <div class="stat-label">Avg Hourly Delta</div>
+                <div class="stat-value">+$1,240.42</div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -306,7 +379,7 @@
         const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
         // Generate X-Axis Labels
-        for(let i=0; i<24; i++) {
+        for (let i = 0; i < 24; i++) {
             const hour = document.createElement('div');
             hour.textContent = i.toString().padStart(2, '0');
             xAxis.appendChild(hour);
@@ -317,7 +390,7 @@
             for (let h = 0; h < 24; h++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
-                
+
                 // Deterministic Math for visual pattern
                 const val = Math.sin(d * 0.5) * Math.cos(h * 0.2) + (Math.random() * 0.2);
                 let colorClass, amount;
@@ -331,17 +404,17 @@
                 else { colorClass = 'l-4'; amount = (val * 5000).toFixed(2); }
 
                 cell.classList.add(colorClass);
-                
+
                 // Tooltip
                 const tooltip = document.createElement('div');
                 tooltip.className = 'tooltip';
                 tooltip.innerHTML = `<strong>${days[d]} ${h}:00</strong><br/>${val > 0 ? '+' : ''}$${amount}`;
                 cell.appendChild(tooltip);
-                
+
                 // Staggered Animation
-                cell.style.animation = `cellFade 0.6s ease forwards ${ (d * 24 + h) * 0.003 }s`;
+                cell.style.animation = `cellFade 0.6s ease forwards ${(d * 24 + h) * 0.003}s`;
                 cell.style.opacity = '0';
-                
+
                 grid.appendChild(cell);
             }
         }
@@ -349,95 +422,95 @@
 
     <!-- Novatrix Data Bridge -->
     <script>
-    window.addEventListener('message', function(e) {
-        if (!e.data || e.data.type !== 'NOVATRIX_DATA') return;
-        var d = e.data;
-        try {
-            switch(d.widgetId) {
-                case 'pnl-status': {
-                    var el = document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var pnl = d.totalPnl || 0;
-                        var isPos = pnl >= 0;
-                        el.innerText = (isPos ? '+' : '-') + '
-</html> + Math.abs(pnl).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                        el.className = 'profit-value ' + (isPos ? 'is-positive' : 'is-negative');
-                        if (typeof adjustFontSize === 'function') adjustFontSize();
+        window.addEventListener('message', function (e) {
+            if (!e.data || e.data.type !== 'NOVATRIX_DATA') return;
+            var d = e.data;
+            try {
+                switch (d.widgetId) {
+                    case 'pnl-status': {
+                        var el = document.getElementById('profitDisplay');
+                        var pctEl = document.getElementById('percentageDisplay');
+                        if (el) {
+                            var pnl = d.totalPnl || 0;
+                            var isPos = pnl >= 0;
+                            el.innerText = (isPos ? '+' : '-') + Math.abs(pnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            el.className = 'profit-value ' + (isPos ? 'is-positive' : 'is-negative');
+                            if (typeof adjustFontSize === 'function') adjustFontSize();
+                        }
+                        if (pctEl && d.totalTrades > 0) {
+                            var pct = ((d.totalPnl / 10000) * 100);
+                            pctEl.innerText = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
+                            pctEl.className = 'percentage ' + (pct >= 0 ? 'is-positive' : 'is-negative');
+                        }
+                        break;
                     }
-                    if (pctEl && d.totalTrades > 0) {
-                        var pct = ((d.totalPnl / 10000) * 100);
-                        pctEl.innerText = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
-                        pctEl.className = 'percentage ' + (pct >= 0 ? 'is-positive' : 'is-negative');
+                    case 'profit-factor': {
+                        var el = document.getElementById('profitDisplay');
+                        var pctEl = document.getElementById('percentageDisplay');
+                        if (el) {
+                            var pf = d.profitFactor || 0;
+                            el.innerText = pf.toFixed(2);
+                            el.className = 'profit-value ' + (pf >= 1 ? 'is-positive' : 'is-negative');
+                        }
+                        if (pctEl) {
+                            pctEl.innerText = pf >= 1.5 ? 'STRONG' : pf >= 1 ? 'FAIR' : 'WEAK';
+                            pctEl.className = 'percentage ' + (pf >= 1 ? 'is-positive' : 'is-negative');
+                        }
+                        break;
                     }
-                    break;
+                    case 'sharpe-ratio': {
+                        var el = document.getElementById('sharpeDisplay') || document.getElementById('profitDisplay');
+                        var pctEl = document.getElementById('percentageDisplay');
+                        if (el) {
+                            var sr = d.sharpeRatio || 0;
+                            el.innerText = sr.toFixed(2);
+                            el.className = el.className.replace(/is-\w+/g, '') + (sr >= 1 ? ' is-positive' : sr >= 0 ? '' : ' is-negative');
+                        }
+                        if (pctEl) {
+                            pctEl.innerText = sr >= 2 ? 'EXCELLENT' : sr >= 1 ? 'GOOD' : sr >= 0 ? 'FAIR' : 'POOR';
+                            pctEl.className = 'percentage ' + (sr >= 1 ? 'is-positive' : 'is-negative');
+                        }
+                        break;
+                    }
+                    case 'winrate': {
+                        var el = document.getElementById('winrateDisplay');
+                        var pctEl = document.getElementById('percentageDisplay');
+                        if (el) {
+                            el.innerText = (d.winRate || 0).toFixed(2) + '%';
+                        }
+                        if (pctEl) {
+                            var wr = d.winRate || 0;
+                            pctEl.innerText = wr >= 50 ? 'ABOVE AVG' : 'BELOW AVG';
+                            pctEl.className = 'percentage ' + (wr >= 50 ? 'is-positive' : 'is-negative');
+                        }
+                        break;
+                    }
+                    case 'total-trades': {
+                        var el = document.getElementById('tradesDisplay') || document.querySelector('.profit-value, .winrate-value, h1');
+                        if (el) {
+                            el.innerText = String(d.totalTrades || 0);
+                        }
+                        break;
+                    }
+                    case 'novatrix-score': {
+                        var el = document.querySelector('.score-value, .profit-value, h1');
+                        if (el) {
+                            el.innerText = String(d.novatrixScore || 0);
+                        }
+                        break;
+                    }
+                    case 'equity-drawdown': {
+                        var el = document.querySelector('.drawdown-value, .profit-value, h1');
+                        if (el) {
+                            var dd = d.maxDrawdown || 0;
+                            el.innerText = dd.toFixed(2) + '%';
+                        }
+                        break;
+                    }
                 }
-                case 'profit-factor': {
-                    var el = document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var pf = d.profitFactor || 0;
-                        el.innerText = pf.toFixed(2);
-                        el.className = 'profit-value ' + (pf >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    if (pctEl) {
-                        pctEl.innerText = pf >= 1.5 ? 'STRONG' : pf >= 1 ? 'FAIR' : 'WEAK';
-                        pctEl.className = 'percentage ' + (pf >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'sharpe-ratio': {
-                    var el = document.getElementById('sharpeDisplay') || document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var sr = d.sharpeRatio || 0;
-                        el.innerText = sr.toFixed(2);
-                        el.className = el.className.replace(/is-\w+/g, '') + (sr >= 1 ? ' is-positive' : sr >= 0 ? '' : ' is-negative');
-                    }
-                    if (pctEl) {
-                        pctEl.innerText = sr >= 2 ? 'EXCELLENT' : sr >= 1 ? 'GOOD' : sr >= 0 ? 'FAIR' : 'POOR';
-                        pctEl.className = 'percentage ' + (sr >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'winrate': {
-                    var el = document.getElementById('winrateDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        el.innerText = (d.winRate || 0).toFixed(2) + '%';
-                    }
-                    if (pctEl) {
-                        var wr = d.winRate || 0;
-                        pctEl.innerText = wr >= 50 ? 'ABOVE AVG' : 'BELOW AVG';
-                        pctEl.className = 'percentage ' + (wr >= 50 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'total-trades': {
-                    var el = document.getElementById('tradesDisplay') || document.querySelector('.profit-value, .winrate-value, h1');
-                    if (el) {
-                        el.innerText = String(d.totalTrades || 0);
-                    }
-                    break;
-                }
-                case 'novatrix-score': {
-                    var el = document.querySelector('.score-value, .profit-value, h1');
-                    if (el) {
-                        el.innerText = String(d.novatrixScore || 0);
-                    }
-                    break;
-                }
-                case 'equity-drawdown': {
-                    var el = document.querySelector('.drawdown-value, .profit-value, h1');
-                    if (el) {
-                        var dd = d.maxDrawdown || 0;
-                        el.innerText = dd.toFixed(2) + '%';
-                    }
-                    break;
-                }
-            }
-        } catch(err) { /* silently ignore */ }
-    });
+            } catch (err) { /* silently ignore */ }
+        });
     </script>
 </body>
+
 </html>
