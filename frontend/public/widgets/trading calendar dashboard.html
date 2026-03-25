@@ -255,20 +255,21 @@
             border-color: var(--phosphor-purple);
         }
     </style>
-<style> 
-  body { 
-      background: transparent !important; 
-      margin: 0 !important; 
-      padding: 0 !important; 
-      overflow: hidden !important;
-  }
-  body > div { 
-      width: 100% !important; 
-      height: 100% !important; 
-      margin: 0 !important; 
-      box-sizing: border-box !important; 
-  }
-</style>
+    <style>
+        body {
+            background: transparent !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+        }
+
+        body>div {
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -483,96 +484,94 @@
 
     <!-- Novatrix Data Bridge -->
     <script>
-    window.addEventListener('message', function(e) {
-        if (!e.data || e.data.type !== 'NOVATRIX_DATA') return;
-        var d = e.data;
-        try {
-            switch(d.widgetId) {
-                case 'pnl-status': {
-                    var el = document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var pnl = d.totalPnl || 0;
-                        var isPos = pnl >= 0;
-                        el.innerText = (isPos ? '+' : '-') + '
-
-</html> + Math.abs(pnl).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                        el.className = 'profit-value ' + (isPos ? 'is-positive' : 'is-negative');
-                        if (typeof adjustFontSize === 'function') adjustFontSize();
+        window.addEventListener('message', function (e) {
+            if (!e.data || e.data.type !== 'NOVATRIX_DATA') return;
+            var d = e.data;
+            try {
+                switch (d.widgetId) {
+                    case 'pnl-status': {
+                        var el = document.getElementById('profitDisplay');
+                        var pctEl = document.getElementById('percentageDisplay');
+                        if (el) {
+                            var pnl = d.totalPnl || 0;
+                            var isPos = pnl >= 0;
+                            el.innerText = (isPos ? '+' : '-') + Math.abs(pnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            el.className = 'profit-value ' + (isPos ? 'is-positive' : 'is-negative');
+                            if (typeof adjustFontSize === 'function') adjustFontSize();
+                        }
+                        if (pctEl && d.totalTrades > 0) {
+                            var pct = ((d.totalPnl / 10000) * 100);
+                            pctEl.innerText = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
+                            pctEl.className = 'percentage ' + (pct >= 0 ? 'is-positive' : 'is-negative');
+                        }
+                        break;
                     }
-                    if (pctEl && d.totalTrades > 0) {
-                        var pct = ((d.totalPnl / 10000) * 100);
-                        pctEl.innerText = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
-                        pctEl.className = 'percentage ' + (pct >= 0 ? 'is-positive' : 'is-negative');
+                    case 'profit-factor': {
+                        var el = document.getElementById('profitDisplay');
+                        var pctEl = document.getElementById('percentageDisplay');
+                        if (el) {
+                            var pf = d.profitFactor || 0;
+                            el.innerText = pf.toFixed(2);
+                            el.className = 'profit-value ' + (pf >= 1 ? 'is-positive' : 'is-negative');
+                        }
+                        if (pctEl) {
+                            pctEl.innerText = pf >= 1.5 ? 'STRONG' : pf >= 1 ? 'FAIR' : 'WEAK';
+                            pctEl.className = 'percentage ' + (pf >= 1 ? 'is-positive' : 'is-negative');
+                        }
+                        break;
                     }
-                    break;
+                    case 'sharpe-ratio': {
+                        var el = document.getElementById('sharpeDisplay') || document.getElementById('profitDisplay');
+                        var pctEl = document.getElementById('percentageDisplay');
+                        if (el) {
+                            var sr = d.sharpeRatio || 0;
+                            el.innerText = sr.toFixed(2);
+                            el.className = el.className.replace(/is-\w+/g, '') + (sr >= 1 ? ' is-positive' : sr >= 0 ? '' : ' is-negative');
+                        }
+                        if (pctEl) {
+                            pctEl.innerText = sr >= 2 ? 'EXCELLENT' : sr >= 1 ? 'GOOD' : sr >= 0 ? 'FAIR' : 'POOR';
+                            pctEl.className = 'percentage ' + (sr >= 1 ? 'is-positive' : 'is-negative');
+                        }
+                        break;
+                    }
+                    case 'winrate': {
+                        var el = document.getElementById('winrateDisplay');
+                        var pctEl = document.getElementById('percentageDisplay');
+                        if (el) {
+                            el.innerText = (d.winRate || 0).toFixed(2) + '%';
+                        }
+                        if (pctEl) {
+                            var wr = d.winRate || 0;
+                            pctEl.innerText = wr >= 50 ? 'ABOVE AVG' : 'BELOW AVG';
+                            pctEl.className = 'percentage ' + (wr >= 50 ? 'is-positive' : 'is-negative');
+                        }
+                        break;
+                    }
+                    case 'total-trades': {
+                        var el = document.getElementById('tradesDisplay') || document.querySelector('.profit-value, .winrate-value, h1');
+                        if (el) {
+                            el.innerText = String(d.totalTrades || 0);
+                        }
+                        break;
+                    }
+                    case 'novatrix-score': {
+                        var el = document.querySelector('.score-value, .profit-value, h1');
+                        if (el) {
+                            el.innerText = String(d.novatrixScore || 0);
+                        }
+                        break;
+                    }
+                    case 'equity-drawdown': {
+                        var el = document.querySelector('.drawdown-value, .profit-value, h1');
+                        if (el) {
+                            var dd = d.maxDrawdown || 0;
+                            el.innerText = dd.toFixed(2) + '%';
+                        }
+                        break;
+                    }
                 }
-                case 'profit-factor': {
-                    var el = document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var pf = d.profitFactor || 0;
-                        el.innerText = pf.toFixed(2);
-                        el.className = 'profit-value ' + (pf >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    if (pctEl) {
-                        pctEl.innerText = pf >= 1.5 ? 'STRONG' : pf >= 1 ? 'FAIR' : 'WEAK';
-                        pctEl.className = 'percentage ' + (pf >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'sharpe-ratio': {
-                    var el = document.getElementById('sharpeDisplay') || document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var sr = d.sharpeRatio || 0;
-                        el.innerText = sr.toFixed(2);
-                        el.className = el.className.replace(/is-\w+/g, '') + (sr >= 1 ? ' is-positive' : sr >= 0 ? '' : ' is-negative');
-                    }
-                    if (pctEl) {
-                        pctEl.innerText = sr >= 2 ? 'EXCELLENT' : sr >= 1 ? 'GOOD' : sr >= 0 ? 'FAIR' : 'POOR';
-                        pctEl.className = 'percentage ' + (sr >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'winrate': {
-                    var el = document.getElementById('winrateDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        el.innerText = (d.winRate || 0).toFixed(2) + '%';
-                    }
-                    if (pctEl) {
-                        var wr = d.winRate || 0;
-                        pctEl.innerText = wr >= 50 ? 'ABOVE AVG' : 'BELOW AVG';
-                        pctEl.className = 'percentage ' + (wr >= 50 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'total-trades': {
-                    var el = document.getElementById('tradesDisplay') || document.querySelector('.profit-value, .winrate-value, h1');
-                    if (el) {
-                        el.innerText = String(d.totalTrades || 0);
-                    }
-                    break;
-                }
-                case 'novatrix-score': {
-                    var el = document.querySelector('.score-value, .profit-value, h1');
-                    if (el) {
-                        el.innerText = String(d.novatrixScore || 0);
-                    }
-                    break;
-                }
-                case 'equity-drawdown': {
-                    var el = document.querySelector('.drawdown-value, .profit-value, h1');
-                    if (el) {
-                        var dd = d.maxDrawdown || 0;
-                        el.innerText = dd.toFixed(2) + '%';
-                    }
-                    break;
-                }
-            }
-        } catch(err) { /* silently ignore */ }
-    });
+            } catch (err) { /* silently ignore */ }
+        });
     </script>
 </body>
 

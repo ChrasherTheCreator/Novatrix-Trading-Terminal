@@ -1,9 +1,10 @@
-import { useMemo, memo } from 'react'
+import { useMemo, memo, useState } from 'react'
 import { useAppStore } from '../store/app'
 import { Radar as RadarIcon } from 'lucide-react'
 
 const PerformanceRadar = memo(function PerformanceRadar() {
   const { trades = [] } = useAppStore()
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
   
   const size = 220
   const center = size / 2
@@ -57,28 +58,6 @@ const PerformanceRadar = memo(function PerformanceRadar() {
 
   return (
     <div className="card performance-radar-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', position: 'relative' }}>
-      <style>{`
-        .radar-hitbox { cursor: pointer; pointer-events: all; }
-        .radar-hitbox .dot { transition: all 0.15s ease; fill: var(--accent-bright); opacity: 0.4; }
-        .radar-hitbox text { transition: all 0.15s ease; fill: var(--text-primary); opacity: 0.8; }
-        
-        .radar-hitbox:hover .dot { r: 5; fill: #fff; opacity: 1; stroke: var(--accent); stroke-width: 2; }
-        .radar-hitbox:hover text { fill: var(--accent-bright); opacity: 1; font-size: 9px; font-weight: 950; }
-        
-        .radar-center-display { display: none; pointer-events: none; }
-        .radar-hitbox:hover ~ .radar-center-display { display: block; }
-        
-        /* Show only the correct text in the center based on which hitbox is hovered */
-        .radar-hitbox-0:hover ~ .radar-center-display .val-0 { display: block; }
-        .radar-hitbox-1:hover ~ .radar-center-display .val-1 { display: block; }
-        .radar-hitbox-2:hover ~ .radar-center-display .val-2 { display: block; }
-        .radar-hitbox-3:hover ~ .radar-center-display .val-3 { display: block; }
-        .radar-hitbox-4:hover ~ .radar-center-display .val-4 { display: block; }
-        .radar-hitbox-5:hover ~ .radar-center-display .val-5 { display: block; }
-        
-        .center-val-text { display: none; }
-      `}</style>
-
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-bright)' }}>
         <RadarIcon size={18}/>
         <span style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.05em' }}>PERFORMANCE RADAR</span>
@@ -103,26 +82,66 @@ const PerformanceRadar = memo(function PerformanceRadar() {
           <polygon points={polyPoints} fill="var(--accent-dim)" stroke="var(--accent)" strokeWidth="2" style={{ opacity: 0.5, pointerEvents: 'none' }} />
 
           {/* Hitboxes and Points */}
-          {pointsData.map((p, i) => (
-            <g key={i} className={`radar-hitbox radar-hitbox-${i}`}>
-                {/* Invisible large hit area for magnetic feel */}
-                <circle cx={p.x} cy={p.y} r="18" fill="transparent" />
-                <circle className="dot" cx={p.x} cy={p.y} r="2.5" />
-                <text x={p.lx} y={p.ly} textAnchor="middle" fontSize="8" fontWeight="900" dominantBaseline="middle">
-                    {p.label}
-                </text>
-            </g>
-          ))}
+          {pointsData.map((p, i) => {
+            const angle = (Math.PI * 2 * i) / 6 - Math.PI / 2;
+            const labelHitX = center + (radius + 35) * Math.cos(angle);
+            const labelHitY = center + (radius + 35) * Math.sin(angle);
+            const isHovered = hoveredIdx === i;
+            
+            return (
+              <g 
+                key={i} 
+                className={`radar-hitbox radar-hitbox-${i}`}
+                onMouseEnter={() => setHoveredIdx(i)}
+                onMouseLeave={() => setHoveredIdx(null)}
+                style={{ cursor: 'pointer' }}
+              >
+                  {/* Invisible hit areas */}
+                  <circle cx={p.x} cy={p.y} r="15" fill="transparent" />
+                  <rect x={labelHitX - 35} y={labelHitY - 10} width="70" height="20" fill="transparent" />
+
+                  <circle 
+                    cx={p.x} 
+                    cy={p.y} 
+                    r={isHovered ? 5 : 2.5} 
+                    fill={isHovered ? '#fff' : 'var(--accent-bright)'}
+                    stroke={isHovered ? 'var(--accent)' : 'none'}
+                    strokeWidth={isHovered ? 2 : 0}
+                    style={{ transition: 'all 0.15s ease', opacity: isHovered ? 1 : 0.4 }}
+                  />
+                  
+                  <text 
+                    x={p.lx} 
+                    y={p.ly} 
+                    textAnchor="middle" 
+                    fontSize={isHovered ? 9 : 8} 
+                    fontWeight={isHovered ? 950 : 900} 
+                    dominantBaseline="middle"
+                    fill={isHovered ? 'var(--accent-bright)' : 'var(--text-primary)'}
+                    style={{ transition: 'all 0.15s ease', opacity: isHovered ? 1 : 0.8 }}
+                  >
+                      {p.label}
+                  </text>
+              </g>
+            );
+          })}
 
           {/* Central Information Hub */}
-          <g className="radar-center-display">
-              <rect x={center - 35} y={center - 12} width="70" height="24" rx="4" fill="rgba(10, 10, 18, 0.98)" stroke="var(--accent)" strokeWidth="1" />
-              {radarStats.map((s, i) => (
-                  <text key={i} className={`center-val-text val-${i}`} x={center} y={center + 4} textAnchor="middle" fontSize="10" fontWeight="950" fill="#fff">
-                      {s.raw.toFixed(1)}{s.suffix}
-                  </text>
-              ))}
-          </g>
+          {hoveredIdx !== null && (
+            <g style={{ pointerEvents: 'none' }}>
+                <rect x={center - 38} y={center - 14} width="76" height="28" rx="6" fill="rgba(10, 10, 18, 0.98)" stroke="var(--accent)" strokeWidth="1.5" />
+                <text 
+                    x={center} 
+                    y={center + 5} 
+                    textAnchor="middle" 
+                    fontSize="11" 
+                    fontWeight="950" 
+                    fill="#fff" 
+                >
+                    {radarStats[hoveredIdx].raw.toFixed(1)}{radarStats[hoveredIdx].suffix}
+                </text>
+            </g>
+          )}
         </svg>
       </div>
 

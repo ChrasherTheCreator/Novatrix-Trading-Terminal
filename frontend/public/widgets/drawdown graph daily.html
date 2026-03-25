@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <style>
         :root {
-            --obsidian-deep: #050507;
+            --obsidian-base: #050507;
             --obsidian-surface: #0f0f12;
             --phosphor-red: #ff3366;
             --phosphor-glow-red: rgba(255, 51, 102, 0.2);
@@ -72,8 +76,17 @@
             text-align: right;
         }
 
-        .stat-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; }
-        .stat-val { font-size: 12px; color: var(--phosphor-red); font-weight: 700; }
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .stat-val {
+            font-size: 12px;
+            color: var(--phosphor-red);
+            font-weight: 700;
+        }
 
         .svg-viewport {
             width: 100%;
@@ -120,26 +133,40 @@
             transform: translate(-50%, -120%);
         }
 
-        .tt-date { font-size: 9px; color: var(--text-dim); display: block; margin-bottom: 2px; }
-        .tt-val { font-size: 11px; color: var(--phosphor-red); font-weight: 700; }
+        .tt-date {
+            font-size: 9px;
+            color: var(--text-dim);
+            display: block;
+            margin-bottom: 2px;
+        }
 
-        svg { overflow: visible; }
+        .tt-val {
+            font-size: 11px;
+            color: var(--phosphor-red);
+            font-weight: 700;
+        }
+
+        svg {
+            overflow: visible;
+        }
     </style>
-<style> 
-  body { 
-      background: transparent !important; 
-      margin: 0 !important; 
-      padding: 0 !important; 
-      overflow: hidden !important;
-  }
-  body > div { 
-      width: 100% !important; 
-      height: 100% !important; 
-      margin: 0 !important; 
-      box-sizing: border-box !important; 
-  }
-</style>
+    <style>
+        body {
+            background: transparent !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+        }
+
+        body>div {
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+        }
+    </style>
 </head>
+
 <body>
 
     <div class="obsidian-card">
@@ -174,18 +201,22 @@
                 <line x1="0" y1="45" x2="456" y2="45" stroke="var(--grid-line)" />
                 <line x1="0" y1="90" x2="456" y2="90" stroke="var(--grid-line)" />
                 <line x1="0" y1="135" x2="456" y2="135" stroke="var(--grid-line)" />
-                
-                <line x1="0" y1="0" x2="456" y2="0" stroke="var(--text-dim)" stroke-opacity="0.3" stroke-dasharray="4" />
+
+                <line x1="0" y1="0" x2="456" y2="0" stroke="var(--text-dim)" stroke-opacity="0.3"
+                    stroke-dasharray="4" />
 
                 <path id="mainPath" fill="none" stroke="var(--phosphor-red)" stroke-width="2" />
                 <path id="fillPath" fill="url(#drawdownGradient)" stroke="none" />
 
-                <line id="hoverLine" x1="0" y1="0" x2="0" y2="180" stroke="var(--phosphor-red)" stroke-width="1" stroke-dasharray="4" style="opacity: 0;" />
-                <circle id="focusPoint" r="4" fill="var(--phosphor-red)" style="opacity: 0; filter: drop-shadow(0 0 5px var(--phosphor-red));" />
+                <line id="hoverLine" x1="0" y1="0" x2="0" y2="180" stroke="var(--phosphor-red)" stroke-width="1"
+                    stroke-dasharray="4" style="opacity: 0;" />
+                <circle id="focusPoint" r="4" fill="var(--phosphor-red)"
+                    style="opacity: 0; filter: drop-shadow(0 0 5px var(--phosphor-red));" />
             </svg>
         </div>
 
-        <div style="display: flex; justify-content: space-between; margin-top: 15px; font-family: 'JetBrains Mono'; font-size: 12px; color: var(--text-dim); text-transform: uppercase;">
+        <div
+            style="display: flex; justify-content: space-between; margin-top: 15px; font-family: 'JetBrains Mono'; font-size: 12px; color: var(--text-dim); text-transform: uppercase;">
             <span>Current Period (All time)</span>
             <span>Drawdown Time: 6 Days</span>
         </div>
@@ -215,7 +246,7 @@
         const dString = `M ${points.map(p => `${p.x},${p.y}`).join(' L ')}`;
         document.getElementById('mainPath').setAttribute("d", dString);
         document.getElementById('fillPath').setAttribute("d", `${dString} V 0 H 0 Z`);
-        document.getElementById('currentVal').textContent = `-$${Math.abs(data[data.length-1].value).toLocaleString()}`;
+        document.getElementById('currentVal').textContent = `-$${Math.abs(data[data.length - 1].value).toLocaleString()}`;
 
         const viewport = document.getElementById('viewport');
         const tooltip = document.getElementById('tooltip');
@@ -225,7 +256,7 @@
         viewport.addEventListener('mousemove', (e) => {
             const rect = viewport.getBoundingClientRect();
             const mouseX = (e.clientX - rect.left) * (width / rect.width);
-            
+
             let closest = points[0];
             let minDiff = Math.abs(mouseX - points[0].x);
             points.forEach(p => {
@@ -236,7 +267,7 @@
             hoverLine.setAttribute("x1", closest.x);
             hoverLine.setAttribute("x2", closest.x);
             hoverLine.style.opacity = "0.5";
-            
+
             focusPoint.setAttribute("cx", closest.x);
             focusPoint.setAttribute("cy", closest.y);
             focusPoint.style.opacity = "1";
@@ -244,7 +275,7 @@
             tooltip.style.opacity = "1";
             tooltip.style.left = `${(closest.x / width) * 100}%`;
             tooltip.style.top = `${(closest.y / height) * 100}%`;
-            
+
             document.getElementById('ttDate').textContent = closest.time;
             document.getElementById('ttValue').textContent = `-$${Math.abs(closest.value).toLocaleString()}`;
         });
@@ -258,95 +289,95 @@
 
     <!-- Novatrix Data Bridge -->
     <script>
-    window.addEventListener('message', function(e) {
-        if (!e.data || e.data.type !== 'NOVATRIX_DATA') return;
-        var d = e.data;
-        try {
-            switch(d.widgetId) {
-                case 'pnl-status': {
-                    var el = document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var pnl = d.totalPnl || 0;
-                        var isPos = pnl >= 0;
-                        el.innerText = (isPos ? '+' : '-') + '
-</html> + Math.abs(pnl).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                        el.className = 'profit-value ' + (isPos ? 'is-positive' : 'is-negative');
-                        if (typeof adjustFontSize === 'function') adjustFontSize();
+        window.addEventListener('message', function (e) {
+            if (!e.data || e.data.type !== 'NOVATRIX_DATA') return;
+            var d = e.data;
+            try {
+                switch (d.widgetId) {
+                    case 'pnl-status': {
+                        var el = document.getElementById('profitDisplay');
+                        var pctEl = document.getElementById('percentageDisplay');
+                        if (el) {
+                            var pnl = d.totalPnl || 0;
+                            var isPos = pnl >= 0;
+                            el.innerText = (isPos ? '+' : '-') + Math.abs(pnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            el.className = 'profit-value ' + (isPos ? 'is-positive' : 'is-negative');
+                            if (typeof adjustFontSize === 'function') adjustFontSize();
+                        }
+                        if (pctEl && d.totalTrades > 0) {
+                            var pct = ((d.totalPnl / 10000) * 100);
+                            pctEl.innerText = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
+                            pctEl.className = 'percentage ' + (pct >= 0 ? 'is-positive' : 'is-negative');
+                        }
+                        break;
                     }
-                    if (pctEl && d.totalTrades > 0) {
-                        var pct = ((d.totalPnl / 10000) * 100);
-                        pctEl.innerText = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
-                        pctEl.className = 'percentage ' + (pct >= 0 ? 'is-positive' : 'is-negative');
+                    case 'profit-factor': {
+                        var el = document.getElementById('profitDisplay');
+                        var pctEl = document.getElementById('percentageDisplay');
+                        if (el) {
+                            var pf = d.profitFactor || 0;
+                            el.innerText = pf.toFixed(2);
+                            el.className = 'profit-value ' + (pf >= 1 ? 'is-positive' : 'is-negative');
+                        }
+                        if (pctEl) {
+                            pctEl.innerText = pf >= 1.5 ? 'STRONG' : pf >= 1 ? 'FAIR' : 'WEAK';
+                            pctEl.className = 'percentage ' + (pf >= 1 ? 'is-positive' : 'is-negative');
+                        }
+                        break;
                     }
-                    break;
+                    case 'sharpe-ratio': {
+                        var el = document.getElementById('sharpeDisplay') || document.getElementById('profitDisplay');
+                        var pctEl = document.getElementById('percentageDisplay');
+                        if (el) {
+                            var sr = d.sharpeRatio || 0;
+                            el.innerText = sr.toFixed(2);
+                            el.className = el.className.replace(/is-\w+/g, '') + (sr >= 1 ? ' is-positive' : sr >= 0 ? '' : ' is-negative');
+                        }
+                        if (pctEl) {
+                            pctEl.innerText = sr >= 2 ? 'EXCELLENT' : sr >= 1 ? 'GOOD' : sr >= 0 ? 'FAIR' : 'POOR';
+                            pctEl.className = 'percentage ' + (sr >= 1 ? 'is-positive' : 'is-negative');
+                        }
+                        break;
+                    }
+                    case 'winrate': {
+                        var el = document.getElementById('winrateDisplay');
+                        var pctEl = document.getElementById('percentageDisplay');
+                        if (el) {
+                            el.innerText = (d.winRate || 0).toFixed(2) + '%';
+                        }
+                        if (pctEl) {
+                            var wr = d.winRate || 0;
+                            pctEl.innerText = wr >= 50 ? 'ABOVE AVG' : 'BELOW AVG';
+                            pctEl.className = 'percentage ' + (wr >= 50 ? 'is-positive' : 'is-negative');
+                        }
+                        break;
+                    }
+                    case 'total-trades': {
+                        var el = document.getElementById('tradesDisplay') || document.querySelector('.profit-value, .winrate-value, h1');
+                        if (el) {
+                            el.innerText = String(d.totalTrades || 0);
+                        }
+                        break;
+                    }
+                    case 'novatrix-score': {
+                        var el = document.querySelector('.score-value, .profit-value, h1');
+                        if (el) {
+                            el.innerText = String(d.novatrixScore || 0);
+                        }
+                        break;
+                    }
+                    case 'equity-drawdown': {
+                        var el = document.querySelector('.drawdown-value, .profit-value, h1');
+                        if (el) {
+                            var dd = d.maxDrawdown || 0;
+                            el.innerText = dd.toFixed(2) + '%';
+                        }
+                        break;
+                    }
                 }
-                case 'profit-factor': {
-                    var el = document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var pf = d.profitFactor || 0;
-                        el.innerText = pf.toFixed(2);
-                        el.className = 'profit-value ' + (pf >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    if (pctEl) {
-                        pctEl.innerText = pf >= 1.5 ? 'STRONG' : pf >= 1 ? 'FAIR' : 'WEAK';
-                        pctEl.className = 'percentage ' + (pf >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'sharpe-ratio': {
-                    var el = document.getElementById('sharpeDisplay') || document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var sr = d.sharpeRatio || 0;
-                        el.innerText = sr.toFixed(2);
-                        el.className = el.className.replace(/is-\w+/g, '') + (sr >= 1 ? ' is-positive' : sr >= 0 ? '' : ' is-negative');
-                    }
-                    if (pctEl) {
-                        pctEl.innerText = sr >= 2 ? 'EXCELLENT' : sr >= 1 ? 'GOOD' : sr >= 0 ? 'FAIR' : 'POOR';
-                        pctEl.className = 'percentage ' + (sr >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'winrate': {
-                    var el = document.getElementById('winrateDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        el.innerText = (d.winRate || 0).toFixed(2) + '%';
-                    }
-                    if (pctEl) {
-                        var wr = d.winRate || 0;
-                        pctEl.innerText = wr >= 50 ? 'ABOVE AVG' : 'BELOW AVG';
-                        pctEl.className = 'percentage ' + (wr >= 50 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'total-trades': {
-                    var el = document.getElementById('tradesDisplay') || document.querySelector('.profit-value, .winrate-value, h1');
-                    if (el) {
-                        el.innerText = String(d.totalTrades || 0);
-                    }
-                    break;
-                }
-                case 'novatrix-score': {
-                    var el = document.querySelector('.score-value, .profit-value, h1');
-                    if (el) {
-                        el.innerText = String(d.novatrixScore || 0);
-                    }
-                    break;
-                }
-                case 'equity-drawdown': {
-                    var el = document.querySelector('.drawdown-value, .profit-value, h1');
-                    if (el) {
-                        var dd = d.maxDrawdown || 0;
-                        el.innerText = dd.toFixed(2) + '%';
-                    }
-                    break;
-                }
-            }
-        } catch(err) { /* silently ignore */ }
-    });
+            } catch (err) { /* silently ignore */ }
+        });
     </script>
 </body>
+
 </html>
