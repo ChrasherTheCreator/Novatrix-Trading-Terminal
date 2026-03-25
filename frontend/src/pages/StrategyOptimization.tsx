@@ -192,7 +192,7 @@ export default function StrategyOptimization() {
         pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 297, (canvas.height * 297) / canvas.width)
         pdf.save(`Strategy_Audit_${new Date().toISOString().split('T')[0]}.pdf`)
         toast.dismiss(loading); toast.success("Exported")
-    } catch (e) { toast.dismiss(loading); toast.error("Export failed") } finally { setIsExporting(false) }
+    } catch (_e) { toast.dismiss(loading); toast.error("Export failed") } finally { setIsExporting(false) }
   }
 
   const tooltips: Record<string, string> = {

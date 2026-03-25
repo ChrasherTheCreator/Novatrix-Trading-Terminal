@@ -93,17 +93,17 @@ export default function App() {
 
   // Keyboard Shortcuts
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+    const handleKey = (ev: KeyboardEvent) => {
+      if (ev.target instanceof HTMLInputElement || ev.target instanceof HTMLTextAreaElement) return
 
-      if (e.key.toLowerCase() === 'p') {
+      if (ev.key.toLowerCase() === 'p') {
         setPulseOpen(true)
-      } else if (e.key.toLowerCase() === 's') {
+      } else if (ev.key.toLowerCase() === 's') {
         setView('journal')
-      } else if (e.key.toLowerCase() === 't') {
+      } else if (ev.key.toLowerCase() === 't') {
         setView('journal')
-      } else if (e.code === 'Space') {
-        e.preventDefault()
+      } else if (ev.code === 'Space') {
+        ev.preventDefault()
         console.log('Command Palette triggered')
       }
     }
@@ -123,9 +123,9 @@ export default function App() {
         if (res.ok) {
             const data = await res.json()
             if (Array.isArray(data.trades) && data.trades.length > 0) {
-              const normalized = data.trades.map((t: any) => ({
+              const normalized = data.trades.map((t: Record<string, unknown>) => ({
                 ...t,
-                status: String(t.status).toUpperCase() as 'OPEN' | 'CLOSED',
+                status: String(t.status || 'OPEN').toUpperCase() as 'OPEN' | 'CLOSED',
                 tags: typeof t.tags === 'string' ? t.tags.split(',').filter(Boolean) : (Array.isArray(t.tags) ? t.tags : []),
                 mistake_tags: typeof t.mistake_tags === 'string' ? t.mistake_tags.split(',').filter(Boolean) : (Array.isArray(t.mistake_tags) ? t.mistake_tags : []),
                 images: typeof t.images === 'string' ? t.images.split(',').filter(Boolean) : (Array.isArray(t.images) ? t.images : []),
@@ -133,8 +133,8 @@ export default function App() {
               setTrades(normalized)
             }
         }
-      } catch (err) {
-        console.error('Failed to fetch trades', err)
+      } catch (_err) {
+        console.error('Failed to fetch trades')
       }
 
       try {
@@ -147,8 +147,8 @@ export default function App() {
               fetchCalendar(data.accounts[0].id)
             }
         }
-      } catch (err) {
-        console.error('Failed to fetch accounts', err)
+      } catch (_err) {
+        console.error('Failed to fetch accounts')
       }
 
       fetchNews()
@@ -162,7 +162,7 @@ export default function App() {
   useEffect(() => {
     if (!user) return
     let ws: WebSocket | null = null
-    let reconnectTimer: any = null
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 
     const connect = () => {
         ws = new WebSocket(WS_URL)
@@ -176,7 +176,7 @@ export default function App() {
             } else if (msg.msg_type === 'MARKET_TICK') {
               const { symbol, price } = msg.payload;
               if (symbol && price) {
-                const cleanSym = symbol.toUpperCase().replace('/', '');
+                const cleanSym = (symbol as string).toUpperCase().replace('/', '');
                 updateLivePrice(cleanSym, parseFloat(price), 0);
               }
             } else if (msg.msg_type === 'NEWS_ALERT') {
@@ -190,12 +190,12 @@ export default function App() {
               // Neue Logik für Finnhub Webhook Daten
               console.log('Finnhub Webhook Data:', msg.payload);
               toast.info('Finnhub Intelligence Update', {
-                description: msg.payload.category || 'New data received via Webhook',
+                description: (msg.payload.category as string) || 'New data received via Webhook',
                 icon: '⚡',
                 duration: 5000
               });
             }
-          } catch (e) { /* ignore */ }
+          } catch (_e) { /* ignore */ }
         }
         ws.onclose = () => {
             reconnectTimer = setTimeout(connect, 5000)

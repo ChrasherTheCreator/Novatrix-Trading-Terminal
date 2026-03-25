@@ -214,13 +214,13 @@ const MOCK_PULSES: Pulse[] = [
     { id: 'p1', account_id: '1', mental_state: 'Focused', emotional_rating: 8, notes: 'Feeling calm', created_at: new Date().toISOString(), tags: [] }
 ];
 
-const cleanTags = (val: any): string[] => {
+const cleanTags = (val: string | string[] | null | undefined): string[] => {
   if (!val) return [];
   // Handle strings like '["Tag1","Tag2"]' or '"Tag1,Tag2"' or actual arrays
   let rawStr = typeof val === 'string' ? val : JSON.stringify(val);
   
   // Strip typical JSON bracket/quote artifacts
-  rawStr = rawStr.replace(/[\[\]\"']/g, '');
+  rawStr = rawStr.replace(/[\[\]"']/g, '');
   
   // Split by comma or semicolon and clean up each entry
   return rawStr.split(/[,,;]/)
@@ -228,13 +228,31 @@ const cleanTags = (val: any): string[] => {
     .filter(s => s.length > 0 && s !== 'null' && s !== 'undefined');
 };
 
-const normalizeTrade = (t: any): Trade => ({
+export interface Tick {
+  time: string
+  price: number
+  open?: number
+  high?: number
+  low?: number
+  close?: number
+  change?: number
+}
+
+const normalizeTrade = (t: Partial<Trade> & Record<string, unknown>): Trade => ({
   ...t,
-  status: String(t.status).toUpperCase() as 'OPEN' | 'CLOSED',
-  tags: cleanTags(t.tags),
-  mistake_tags: cleanTags(t.mistake_tags),
-  images: typeof t.images === 'string' ? (t.images ? t.images.split(',') : []) : (Array.isArray(t.images) ? t.images : []),
-})
+  id: String(t.id || ''),
+  symbol: String(t.symbol || ''),
+  side: (t.side as 'LONG' | 'SHORT') || 'LONG',
+  entry_price: Number(t.entry_price || 0),
+  exit_price: t.exit_price ? Number(t.exit_price) : null,
+  pnl: t.pnl !== undefined ? Number(t.pnl) : null,
+  pnl_pct: t.pnl_pct !== undefined ? Number(t.pnl_pct) : null,
+  status: String(t.status || 'OPEN').toUpperCase() as 'OPEN' | 'CLOSED',
+  tags: cleanTags(t.tags as string | string[]),
+  mistake_tags: cleanTags(t.mistake_tags as string | string[]),
+  images: typeof t.images === 'string' ? (t.images ? (t.images as string).split(',') : []) : (Array.isArray(t.images) ? t.images as string[] : []),
+  created_at: String(t.created_at || new Date().toISOString()),
+} as Trade)
 
 // Configuration for API and WebSocket
 const API_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
@@ -252,8 +270,8 @@ interface AppState {
   backtests: BacktestSession[]
   marketQuotes: LiveTick[]
   livePrices: Record<string, { price: number, change: number }>
-  marketHistory: Record<string, any[]>
-  historicalBars: Record<string, any[]>
+  marketHistory: Record<string, Tick[]>
+  historicalBars: Record<string, Tick[]>
   optimizationScenarios: OptimizationScenario[]
   notifications: AppNotification[]
   timeFormat: '24h' | '12h'
@@ -320,7 +338,7 @@ interface AppState {
   updateTrade: (id: string, trade: Partial<Trade>) => Promise<void>
   removeTrade: (id: string) => Promise<void>
   fetchTrades: () => Promise<void>
-  analyzeTrade: (tradeId: string, promptType: string) => Promise<any>
+  analyzeTrade: (tradeId: string, promptType: string) => Promise<unknown>
   fetchCalendar: (accountId: string) => Promise<void>
   fetchMarketQuotes: () => Promise<void>
   fetchMarketHistory: (symbol: string, interval?: string, limit?: number) => Promise<void>

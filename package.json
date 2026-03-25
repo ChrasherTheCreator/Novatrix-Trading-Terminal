@@ -1,22 +1,17 @@
 {
   "name": "novatrix",
   "version": "1.0.0",
-  "description": "",
+  "description": "Novatrix Trading Terminal",
   "main": "index.js",
-  "directories": {
-    "test": "tests"
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build"
   },
-  "scripts": {},
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@types/node": "^25.3.3"
   },
   "dependencies": {
-    "@vercel/analytics": "^2.0.1",
-    "@vercel/speed-insights": "^2.0.0"
+    "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.2.0"
   }
 }

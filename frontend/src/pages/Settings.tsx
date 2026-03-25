@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useAppStore, Account } from '../store/app'
+import { useAppStore, Account, SettingsTab } from '../store/app'
 import { User, Shield, CreditCard, Bell, Database, Trash2, Zap, ChevronRight, Briefcase, Plus, Edit3, X, Save } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { toast } from 'sonner'
@@ -72,10 +72,10 @@ export default function Settings() {
         const newAcc: Account = {
             id: Math.random().toString(36).substr(2, 9),
             name: accForm.name!,
-            type: accForm.type as any,
+            type: (accForm.type as 'Personal' | 'Prop-Firm') || 'Personal',
             size: accForm.size!,
             currency: accForm.currency!,
-            propPhases: accForm.type === 'Prop-Firm' ? accForm.propPhases : undefined,
+            propPhases: accForm.type === 'Prop-Firm' ? (accForm.propPhases as 1 | 2) : undefined,
             maxDD: accForm.maxDD,
             profitTarget: accForm.profitTarget,
             maxDDP2: (accForm.type === 'Prop-Firm' && accForm.propPhases === 2) ? accForm.maxDDP2 : undefined,
@@ -87,7 +87,7 @@ export default function Settings() {
     setIsAddAccountOpen(false)
   }
 
-  const tabs = [
+  const tabs: { id: SettingsTab; label: string; icon: JSX.Element }[] = [
     { id: 'profile', label: 'Profile Settings', icon: <User size={18}/> },
     { id: 'general', label: 'Risk Management', icon: <Zap size={18}/> },
     { id: 'accounts', label: 'Trading Accounts', icon: <CreditCard size={18}/> },
@@ -105,7 +105,7 @@ export default function Settings() {
             {tabs.map(t => (
             <button 
                 key={t.id} 
-                onClick={() => setActiveSettingsTab(t.id as any)}
+                onClick={() => setActiveSettingsTab(t.id)}
                 className={`nav-item ${activeSettingsTab === t.id ? 'active' : ''}`}
                 style={{ 
                     padding: '0.75rem 1rem', borderRadius: '10px', border: 'none', 

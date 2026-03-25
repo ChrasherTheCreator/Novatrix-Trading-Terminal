@@ -52,7 +52,7 @@ const getOfficialUrl = (event: string, country: string) => {
     return `https://www.google.com/search?q=${encodeURIComponent(country + ' ' + event + ' official source release site')}`;
 };
 
-const EVENT_METADATA: Record<string, any> = {
+const EVENT_METADATA: Record<string, { measures: string, usual_effect: string, why_care: string, source: string }> = {
     'CPI': {
         measures: "Change in the price of goods and services purchased by consumers.",
         usual_effect: "Actual > Forecast = Good for currency",
@@ -137,7 +137,7 @@ export default function EconomicCalendar() {
             time: dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
             currency: e.currency,
             event: e.title,
-            impact: e.impact.toUpperCase() as any,
+            impact: (e.impact.toUpperCase() as 'LOW' | 'MEDIUM' | 'HIGH') || 'LOW',
             previous: e.previous || '--',
             forecast: e.forecast || '--',
             actual: e.actual || '',
@@ -180,7 +180,8 @@ export default function EconomicCalendar() {
         }
     })
 
-    const sortFn = (a: any, b: any) => new Date(a[1][0].event_time).getTime() - new Date(b[1][0].event_time).getTime();
+    const sortFn = (a: [string, EconomicEvent[]], b: [string, EconomicEvent[]]) => 
+        new Date(a[1][0].event_time).getTime() - new Date(b[1][0].event_time).getTime();
     
     return {
         pastGroups: Object.entries(past).sort(sortFn).reverse(),

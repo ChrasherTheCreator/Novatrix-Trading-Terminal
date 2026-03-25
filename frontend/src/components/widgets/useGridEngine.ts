@@ -72,7 +72,7 @@ export function useGridEngine(containerRef: React.RefObject<HTMLDivElement | nul
     };
   }, [getMetrics]);
 
-  const snapToGrid = useCallback((x: number, y: number, w: number, h: number) => {
+  const snapToGrid = useCallback((x: number, y: number, w: number, _h: number) => {
     const m = getMetrics();
     let col = Math.round((x - m.padding) / (m.colWidth + m.gap));
     let row = Math.round((y - m.padding) / (m.rowHeight + m.gap));

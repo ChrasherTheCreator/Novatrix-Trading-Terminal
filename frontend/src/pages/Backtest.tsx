@@ -32,6 +32,15 @@ const ASSET_CLASSES = [
   { id: 'stocks', label: 'Stocks', defaults: ['AAPL', 'TSLA', 'NVDA'] },
 ]
 
+interface ActiveTrade {
+  id: string
+  side: 'BUY' | 'SELL'
+  entry: number
+  sl: number
+  tp: number
+  lots: number
+}
+
 export default function Backtest() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [activeAsset, setActiveAsset] = useState('BTCUSD')
@@ -53,7 +62,7 @@ export default function Backtest() {
   
   const [slValue, setSlValue] = useState(0)
   const [tpValue, setTpValue] = useState(0)
-  const [activeTrades, setActiveTrades] = useState<any[]>([])
+  const [activeTrades, setActiveTrades] = useState<ActiveTrade[]>([])
 
   const data: Tick[] = useMemo(() => {
     const profile = ASSET_PROFILES[activeAsset] || ASSET_PROFILES['BTCUSD']
@@ -83,23 +92,24 @@ export default function Backtest() {
 
   const rrStats = useMemo(() => {
     if (!entryPrice || !slValue || !tpValue) return { rr: 0 }
-    let slDist = riskMode === 'PRICE' ? Math.abs(entryPrice - slValue) : (entryPrice * (slValue / 100))
-    let tpDist = riskMode === 'PRICE' ? Math.abs(entryPrice - tpValue) : (entryPrice * (tpValue / 100))
+    const slDist = riskMode === 'PRICE' ? Math.abs(entryPrice - slValue) : (entryPrice * (slValue / 100))
+    const tpDist = riskMode === 'PRICE' ? Math.abs(entryPrice - tpValue) : (entryPrice * (tpValue / 100))
     return { rr: (tpDist / (slDist || 1)).toFixed(2) }
   }, [entryPrice, slValue, tpValue, riskMode])
 
   useEffect(() => {
-    let timer: any
+    let timer: ReturnType<typeof setInterval> | null = null
     if (isPlaying && currentIdx < data.length - 1) {
       timer = setInterval(() => { setCurrentIdx(prev => prev + 1) }, 1000 / speed)
     }
-    return () => clearInterval(timer)
+    return () => { if (timer) clearInterval(timer) }
   }, [isPlaying, currentIdx, speed, data.length])
 
   useEffect(() => {
     if (activeTrades.length === 0) return
     const tick = data[currentIdx]
-    const closed: string[] = []
+    if (!tick) return
+    const closedIds: string[] = []
     activeTrades.forEach(t => {
         const hitSL = t.side === 'BUY' ? tick.low <= t.sl : tick.high >= t.sl
         const hitTP = t.side === 'BUY' ? tick.high >= t.tp : tick.low <= t.tp
@@ -107,12 +117,12 @@ export default function Backtest() {
             const exitPrice = hitSL ? t.sl : t.tp
             const pnl = (exitPrice - t.entry) * (t.side === 'BUY' ? 1 : -1) * t.lots * activeProfile.multiplier
             setBalance(prev => prev + pnl)
-            closed.push(t.id)
+            closedIds.push(t.id)
             if (hitSL) toast.error(`SL Hit: -$${Math.abs(pnl).toFixed(2)}`)
             else toast.success(`TP Hit: +$${pnl.toFixed(2)}`)
         }
     })
-    if (closed.length > 0) setActiveTrades(prev => prev.filter(at => !closed.includes(at.id)))
+    if (closedIds.length > 0) setActiveTrades(prev => prev.filter(at => !closedIds.includes(at.id)))
   }, [currentIdx, activeTrades, data, activeProfile])
 
   const handlePlaceOrder = () => {
