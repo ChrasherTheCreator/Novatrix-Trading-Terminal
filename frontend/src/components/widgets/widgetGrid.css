@@ -31,11 +31,21 @@
     background: rgba(15, 15, 18, 0.4);
     pointer-events: none;
     z-index: -1;
-    transition: border-color 0.3s ease;
+    transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.light-mode .wg-widget-border {
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
 }
 
 .wg-widget-card:hover {
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(168, 85, 247, 0.2);
+}
+
+.light-mode .wg-widget-card:hover {
+    box-shadow: 0 20px 45px rgba(139, 92, 246, 0.15);
 }
 
 /* Iframe container */

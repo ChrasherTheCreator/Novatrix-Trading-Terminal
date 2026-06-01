@@ -207,18 +207,131 @@ export interface CalendarDay {
 const today = new Date()
 const d = (offset: number) => { const dt = new Date(today); dt.setDate(dt.getDate() - offset); return dt.toISOString() }
 
-const MOCK_TRADES: Trade[] = [
-  { id: '1', symbol: 'BTCUSD', side: 'LONG', entry_price: 62000, exit_price: 62800, pnl: 800, pnl_pct: 1.29, status: 'CLOSED', tags: ['Trend Alignment', 'Support Bounce'], mistake_tags: [], created_at: d(0), mae: 150, mfe: 1200, r_multiple: 2.1, strategy: 'Breakout', emotion: 'Confident' },
-  { id: '2', symbol: 'EURUSD', side: 'SHORT', entry_price: 1.0850, exit_price: 1.0880, pnl: -300, pnl_pct: -0.28, status: 'CLOSED', tags: ['RSI Overbought'], mistake_tags: ['FOMO', 'Oversize'], created_at: d(1), mae: 40, mfe: 10, r_multiple: -0.8, strategy: 'Mean Reversion', emotion: 'Anxious' },
-  { id: '3', symbol: 'XAUUSD', side: 'LONG', entry_price: 2350, exit_price: 2364.5, pnl: 1450, pnl_pct: 0.62, status: 'CLOSED', tags: ['Support Bounce', 'Institutional Level'], mistake_tags: [], created_at: d(2), mae: 20, mfe: 600, r_multiple: 3.2, strategy: 'Support Bounce', emotion: 'Focused' },
-  { id: '4', symbol: 'SPX500', side: 'SHORT', entry_price: 5220, exit_price: 5198, pnl: 2200, pnl_pct: 0.42, status: 'CLOSED', tags: ['Volume Spike', 'Trend Alignment'], mistake_tags: [], created_at: d(3), mae: 80, mfe: 1400, r_multiple: 2.8, strategy: 'Trend Following', emotion: 'Calm' },
-  { id: '5', symbol: 'GBPUSD', side: 'LONG', entry_price: 1.2640, exit_price: 1.2590, pnl: -500, pnl_pct: -0.40, status: 'CLOSED', tags: ['News Play'], mistake_tags: ['Chasing', 'No Confirmation'], created_at: d(4), mae: 90, mfe: 15, r_multiple: -1.2, strategy: 'News Play', emotion: 'FOMO' },
-  { id: '6', symbol: 'NASDAQ', side: 'LONG', entry_price: 18400, exit_price: 18620, pnl: 2200, pnl_pct: 1.20, status: 'CLOSED', tags: ['Breakout', 'Volume Spike'], mistake_tags: [], created_at: d(5), mae: 60, mfe: 900, r_multiple: 3.5, strategy: 'Breakout', emotion: 'Confident' },
-  { id: '7', symbol: 'USDJPY', side: 'SHORT', entry_price: 157.40, exit_price: 156.80, pnl: 600, pnl_pct: 0.38, status: 'CLOSED', tags: ['Resistance Rejection'], mistake_tags: [], created_at: d(7), mae: 30, mfe: 750, r_multiple: 2.0, strategy: 'Mean Reversion', emotion: 'Focused' },
-  { id: '8', symbol: 'BTCUSD', side: 'SHORT', entry_price: 63500, exit_price: 62100, pnl: 1400, pnl_pct: 2.21, status: 'CLOSED', tags: ['Distribution Zone', 'Trend Alignment'], mistake_tags: [], created_at: d(9), mae: 200, mfe: 1800, r_multiple: 4.1, strategy: 'Trend Following', emotion: 'Calm' },
-  { id: '9', symbol: 'ETHUSD', side: 'LONG', entry_price: 3420, exit_price: 3380, pnl: -400, pnl_pct: -1.17, status: 'CLOSED', tags: ['Support Bounce'], mistake_tags: ['Early Entry'], created_at: d(11), mae: 120, mfe: 40, r_multiple: -1.0, strategy: 'Support Bounce', emotion: 'Impatient' },
-  { id: '10', symbol: 'XAUUSD', side: 'LONG', entry_price: 2310, exit_price: null, pnl: null, pnl_pct: null, status: 'OPEN', tags: ['Accumulation Zone'], mistake_tags: [], created_at: d(0), mae: 15, mfe: 180, strategy: 'Position Trade', emotion: 'Confident' },
-];
+const generateMockTrades = (): Trade[] => {
+  const trades: Trade[] = [];
+  const symbols = ['EURUSD', 'XAUUSD', 'GBPUSD', 'NAS100', 'BTCUSD'];
+  const strategies = ['London Breakout', 'Institutional Bounce', 'BTC Trend Scalp', 'Mean Reversion'];
+  const mistakeTags = ['FOMO', 'Revenge Trading', 'Late Entry', 'Overleveraged', 'Poor Risk Mgmt'];
+  
+  let currentBalance = 100000;
+  let seed = 12345;
+  const random = () => {
+    const x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+  };
+
+  for (let i = 0; i < 55; i++) {
+    const symbol = symbols[Math.floor(random() * symbols.length)];
+    const strategy = strategies[Math.floor(random() * strategies.length)];
+    const side = random() > 0.45 ? 'LONG' : 'SHORT';
+    const isForex = ['EURUSD', 'GBPUSD'].includes(symbol);
+    const isCrypto = symbol === 'BTCUSD';
+    
+    const winRate = isForex ? 0.65 : (isCrypto ? 0.52 : 0.58);
+    const isWin = random() < winRate;
+    
+    const riskAmount = 1000; 
+    let pnl = 0;
+    let r_multiple = 0;
+    
+    if (isWin) {
+      r_multiple = 1.2 + random() * 1.8;
+      pnl = Math.round(riskAmount * r_multiple);
+    } else {
+      r_multiple = -(0.7 + random() * 0.5);
+      pnl = Math.round(riskAmount * r_multiple);
+    }
+    
+    const dayOffset = Math.floor(30 - (i * 30 / 55));
+    const date = new Date(today);
+    date.setDate(date.getDate() - dayOffset);
+    date.setHours(8 + Math.floor(random() * 10), Math.floor(random() * 60), 0, 0);
+    
+    const entryPrice = isCrypto ? 60000 + random() * 5000 : (symbol === 'XAUUSD' ? 2300 + random() * 100 : 1.05 + random() * 0.05);
+    const exitPrice = entryPrice + (pnl / (isCrypto ? 10 : (symbol === 'XAUUSD' ? 100 : 10000)));
+    
+    const mae = Math.round(random() * 400);
+    const mfe = isWin ? Math.round(pnl * (1.1 + random() * 0.5)) : Math.round(random() * 300);
+    
+    const hasMistake = !isWin && random() < 0.25;
+    const currentMistakeTags = hasMistake ? [mistakeTags[Math.floor(random() * mistakeTags.length)]] : [];
+    
+    let emotion = 'Focused';
+    if (isWin) {
+      emotion = random() > 0.5 ? 'Confident' : 'Focused';
+    } else {
+      emotion = hasMistake ? (random() > 0.5 ? 'FOMO' : 'Anxious') : 'Calm';
+    }
+    
+    trades.push({
+      id: `demo-trade-${i}`,
+      symbol,
+      side,
+      entry_price: parseFloat(entryPrice.toFixed(isForex ? 5 : 2)),
+      exit_price: parseFloat(exitPrice.toFixed(isForex ? 5 : 2)),
+      pnl,
+      pnl_pct: parseFloat(((pnl / currentBalance) * 100).toFixed(2)),
+      status: 'CLOSED',
+      created_at: date.toISOString(),
+      entry_time: date.toISOString(),
+      exit_time: new Date(date.getTime() + (30 + random() * 180) * 60000).toISOString(),
+      mae,
+      mfe,
+      r_multiple: parseFloat(r_multiple.toFixed(2)),
+      strategy,
+      emotion,
+      mistake_tags: currentMistakeTags,
+      tags: [strategy, isWin ? 'Win' : 'Loss'],
+      lot_size: isCrypto ? 0.5 : (symbol === 'XAUUSD' ? 2 : 5)
+    });
+    
+    currentBalance += pnl;
+  }
+  
+  const lastOpenDate = new Date(today);
+  lastOpenDate.setHours(today.getHours() - 1);
+  const lastIndex = trades.length - 1;
+  trades[lastIndex].status = 'OPEN';
+  trades[lastIndex].exit_price = null;
+  trades[lastIndex].pnl = null;
+  trades[lastIndex].pnl_pct = null;
+  trades[lastIndex].exit_time = undefined;
+  
+  return trades;
+};
+
+const generateDemoCalendar = (trades: Trade[]): Record<string, CalendarDay> => {
+  const cal: Record<string, CalendarDay> = {};
+  trades.forEach(t => {
+    if (t.status !== 'CLOSED' || t.pnl === null) return;
+    const dateStr = t.created_at.slice(0, 10);
+    if (!cal[dateStr]) {
+      cal[dateStr] = { pnl: 0, win_rate: 0, trades: 0, avg_mae: 0, avg_mfe: 0 };
+    }
+    const day = cal[dateStr];
+    day.pnl += t.pnl;
+    day.trades += 1;
+    day.avg_mae += t.mae || 0;
+    day.avg_mfe += t.mfe || 0;
+    
+    if (t.pnl > 0) {
+      day.win_rate += 1; 
+    }
+  });
+  
+  Object.keys(cal).forEach(dateStr => {
+    const day = cal[dateStr];
+    if (day.trades > 0) {
+      day.win_rate = (day.win_rate / day.trades) * 100;
+      day.avg_mae = Math.round(day.avg_mae / day.trades);
+      day.avg_mfe = Math.round(day.avg_mfe / day.trades);
+    }
+  });
+  return cal;
+};
+
+const MOCK_TRADES: Trade[] = generateMockTrades();
+const DEMO_CALENDAR: Record<string, CalendarDay> = generateDemoCalendar(MOCK_TRADES);
 
 const MOCK_PULSES: Pulse[] = [
   { id: 'p1', account_id: '1', mental_state: 'Focused', emotional_rating: 8, notes: 'Good sleep, clear head. Ready to execute.', created_at: d(0), tags: ['Disciplined', 'Calm'] },
@@ -232,18 +345,6 @@ const DEMO_PLAYBOOKS: Playbook[] = [
   { id: 'pb2', name: 'Institutional Bounce', description: 'Long/Short at key institutional S/R levels with confluence.', winRate: 72, trades: 31, avgRR: 3.1, rules: [{text: 'Minimum 3 touches on S/R level', weight: 3, done: true}, {text: 'Higher timeframe trend aligned', weight: 3, done: true}, {text: 'Rejection wick or engulfing candle', weight: 2, done: true}] },
   { id: 'pb3', name: 'BTC Trend Scalp', description: 'Scalp in direction of 4H trend on 15min pullbacks.', winRate: 61, trades: 89, avgRR: 1.8, rules: [{text: '4H EMA200 direction confirmed', weight: 3, done: true}, {text: 'RSI reset to 40-60 on pullback', weight: 2, done: true}, {text: 'Entry on 15min engulfing', weight: 2, done: true}] },
 ];
-
-const DEMO_CALENDAR: Record<string, CalendarDay> = {
-  [d(0).slice(0,10)]: { pnl: 800, win_rate: 100, trades: 1, avg_mae: 150, avg_mfe: 1200 },
-  [d(1).slice(0,10)]: { pnl: -300, win_rate: 0, trades: 1, avg_mae: 40, avg_mfe: 10 },
-  [d(2).slice(0,10)]: { pnl: 1450, win_rate: 100, trades: 1, avg_mae: 20, avg_mfe: 600 },
-  [d(3).slice(0,10)]: { pnl: 2200, win_rate: 100, trades: 1, avg_mae: 80, avg_mfe: 1400 },
-  [d(4).slice(0,10)]: { pnl: -500, win_rate: 0, trades: 1, avg_mae: 90, avg_mfe: 15 },
-  [d(5).slice(0,10)]: { pnl: 2200, win_rate: 100, trades: 1, avg_mae: 60, avg_mfe: 900 },
-  [d(7).slice(0,10)]: { pnl: 600, win_rate: 100, trades: 1, avg_mae: 30, avg_mfe: 750 },
-  [d(9).slice(0,10)]: { pnl: 1400, win_rate: 100, trades: 1, avg_mae: 200, avg_mfe: 1800 },
-  [d(11).slice(0,10)]: { pnl: -400, win_rate: 0, trades: 1, avg_mae: 120, avg_mfe: 40 },
-};
 
 const cleanTags = (val: string | string[] | null | undefined): string[] => {
   if (!val) return [];

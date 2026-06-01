@@ -17,7 +17,7 @@
         }
 
         body {
-            background-color: #0d0d0f;
+            background-color: transparent !important;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -31,11 +31,11 @@
             width: 250px;
             height: 160px;
             padding: 24px 20px;
-            background: linear-gradient(145deg, #0f0f12 0%, #050507 100%);
+            background: transparent !important;
             border-radius: 16px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            box-shadow: none !important;
             overflow: hidden;
-            border: 1px solid rgba(157, 78, 221, 0.15);
+            border: none !important;
             cursor: pointer;
             transition: transform 0.4s cubic-bezier(0.2, 1, 0.3, 1);
 
@@ -130,9 +130,7 @@
         .obsidian-display:hover {
             transform: translateY(-4px) scale(1.02);
             border-color: rgba(157, 78, 221, 0.4);
-            box-shadow: 
-                0 30px 60px rgba(0, 0, 0, 0.6),
-                0 0 20px rgba(157, 78, 221, 0.1);
+            box-shadow: none !important;
         }
 
         /* Entry Animation */
@@ -180,6 +178,50 @@
             font-size: 12px;
             color: #888;
             margin: 0;
+        }
+
+        /* Automatic Light Mode styling */
+        .light-mode {
+            --obsidian-base: #f8fafc;
+            --obsidian-surface: #ffffff;
+            --text-primary: #020617;
+            --text-main: #020617;
+            --text-dim: #64748b;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --border-subtle: rgba(139, 92, 246, 0.15);
+            --surface-shine: rgba(0, 0, 0, 0.02);
+            --grid-line: rgba(139, 92, 246, 0.08);
+            --glow-accent: rgba(139, 92, 246, 0.05);
+            --phosphor-green: #059669;
+            --phosphor-red: #dc2626;
+            --phosphor-glow-green: rgba(5, 150, 105, 0.1);
+            --phosphor-glow-red: rgba(220, 38, 38, 0.1);
+            --gloss-purple: #7c3aed;
+        }
+        .light-mode body {
+            color: var(--text-primary) !important;
+        }
+        .light-mode .obsidian-display,
+        .light-mode .creatix-card,
+        .light-mode .card,
+        .light-mode .widget-container,
+        .light-mode .display-card {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .light-mode svg text {
+            fill: var(--text-dim) !important;
+        }
+        .light-mode .timeframe {
+            color: var(--text-muted) !important;
+        }
+        .light-mode .label {
+            color: var(--gloss-purple) !important;
+        }
+        .light-mode .stat-value.purple {
+            color: var(--gloss-purple) !important;
         }
 </style>
 <style> 

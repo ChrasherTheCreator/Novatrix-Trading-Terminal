@@ -21,6 +21,19 @@
             --loss-mid: #4c0519;
             --text-muted: #555555;
             --border-subtle: rgba(157, 78, 221, 0.15);
+            --text-primary: #ffffff;
+        }
+
+        .light-mode {
+            --text-primary: #020617;
+            --text-muted: #64748b;
+            --obsidian-base: #f8fafc;
+            --obsidian-surface: #ffffff;
+            --profit-max: #059669;
+            --profit-mid: #d1fae5;
+            --loss-max: #dc2626;
+            --loss-mid: #fee2e2;
+            --phosphor-glow: rgba(139, 92, 246, 0.1);
         }
 
         * {
@@ -31,7 +44,7 @@
 
         body {
             background-color: transparent !important;
-            color: #ffffff;
+            color: var(--text-primary);
             font-family: 'Inter', sans-serif;
             display: flex;
             align-items: center;
@@ -195,14 +208,14 @@
         .cell:hover {
             transform: scale(1.4);
             z-index: 10;
-            box-shadow: 0 0px 15px rgba(0, 0, 0, 0.5);
+            box-shadow: none !important;
             outline: 1px solid var(--phosphor-purple);
         }
 
         /* Data Colors */
         .p-4 {
             background: var(--profit-max);
-            box-shadow: 0 0 10px rgba(0, 255, 163, 0.3);
+            box-shadow: none !important;
         }
 
         .p-3 {
@@ -235,7 +248,7 @@
 
         .l-4 {
             background: var(--loss-max);
-            box-shadow: 0 0 10px rgba(255, 51, 102, 0.3);
+            box-shadow: none !important;
         }
 
         /* Tooltip */
@@ -248,8 +261,8 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.2s;
-            border: 1px solid var(--phosphor-purple);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            border: none !important;
+            box-shadow: none !important;
             white-space: nowrap;
             z-index: 100;
             bottom: 150%;
@@ -330,6 +343,50 @@
             font-size: 12px;
             color: #888;
             margin: 0;
+        }
+
+        /* Automatic Light Mode styling */
+        .light-mode {
+            --obsidian-base: #f8fafc;
+            --obsidian-surface: #ffffff;
+            --text-primary: #020617;
+            --text-main: #020617;
+            --text-dim: #64748b;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --border-subtle: rgba(139, 92, 246, 0.15);
+            --surface-shine: rgba(0, 0, 0, 0.02);
+            --grid-line: rgba(139, 92, 246, 0.08);
+            --glow-accent: rgba(139, 92, 246, 0.05);
+            --phosphor-green: #059669;
+            --phosphor-red: #dc2626;
+            --phosphor-glow-green: rgba(5, 150, 105, 0.1);
+            --phosphor-glow-red: rgba(220, 38, 38, 0.1);
+            --gloss-purple: #7c3aed;
+        }
+        .light-mode body {
+            color: var(--text-primary) !important;
+        }
+        .light-mode .obsidian-display,
+        .light-mode .creatix-card,
+        .light-mode .card,
+        .light-mode .widget-container,
+        .light-mode .display-card {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .light-mode svg text {
+            fill: var(--text-dim) !important;
+        }
+        .light-mode .timeframe {
+            color: var(--text-muted) !important;
+        }
+        .light-mode .label {
+            color: var(--gloss-purple) !important;
+        }
+        .light-mode .stat-value.purple {
+            color: var(--gloss-purple) !important;
         }
 </style>
     <style>

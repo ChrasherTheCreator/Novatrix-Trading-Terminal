@@ -17,7 +17,7 @@
         }
 
         body {
-            background-color: #0d0d0f;
+            background-color: transparent !important;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -33,10 +33,10 @@
             padding: 20px;
             background: linear-gradient(145deg, var(--obsidian-surface) 0%, var(--obsidian-base) 100%);
             border-radius: 16px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            box-shadow: none !important;
             color: var(--text-primary);
             overflow: hidden;
-            border: 1px solid var(--border-subtle);
+            border: none !important;
             cursor: pointer;
             transition: transform 0.4s cubic-bezier(0.2, 1, 0.3, 1);
 
@@ -113,7 +113,7 @@
             padding: 6px 12px;
             border-radius: 8px;
             background: var(--bg-secondary);
-            border: 1px solid var(--border-subtle);
+            border: none !important;
         }
 
         .status-dot {
@@ -121,7 +121,7 @@
             height: 8px;
             border-radius: 50%;
             background: var(--phosphor-green);
-            box-shadow: 0 0 8px var(--phosphor-green);
+            box-shadow: none !important;
         }
 
         .location-text {
@@ -174,6 +174,50 @@
             font-size: 12px;
             color: #888;
             margin: 0;
+        }
+
+        /* Automatic Light Mode styling */
+        .light-mode {
+            --obsidian-base: #f8fafc;
+            --obsidian-surface: #ffffff;
+            --text-primary: #020617;
+            --text-main: #020617;
+            --text-dim: #64748b;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --border-subtle: rgba(139, 92, 246, 0.15);
+            --surface-shine: rgba(0, 0, 0, 0.02);
+            --grid-line: rgba(139, 92, 246, 0.08);
+            --glow-accent: rgba(139, 92, 246, 0.05);
+            --phosphor-green: #059669;
+            --phosphor-red: #dc2626;
+            --phosphor-glow-green: rgba(5, 150, 105, 0.1);
+            --phosphor-glow-red: rgba(220, 38, 38, 0.1);
+            --gloss-purple: #7c3aed;
+        }
+        .light-mode body {
+            color: var(--text-primary) !important;
+        }
+        .light-mode .obsidian-display,
+        .light-mode .creatix-card,
+        .light-mode .card,
+        .light-mode .widget-container,
+        .light-mode .display-card {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .light-mode svg text {
+            fill: var(--text-dim) !important;
+        }
+        .light-mode .timeframe {
+            color: var(--text-muted) !important;
+        }
+        .light-mode .label {
+            color: var(--gloss-purple) !important;
+        }
+        .light-mode .stat-value.purple {
+            color: var(--gloss-purple) !important;
         }
 </style>
 <style> 

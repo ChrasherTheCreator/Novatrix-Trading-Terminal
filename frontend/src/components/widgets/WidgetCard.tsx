@@ -30,6 +30,7 @@ export default function WidgetCard({
   const pulses = useAppStore(s => s.pulses);
   const latestScore = useAppStore(s => s.latestScore);
   const demoMode = useAppStore(s => s.demoMode);
+  const theme = useAppStore(s => s.theme);
 
   // Send data to iframe via postMessage after it loads
   useEffect(() => {
@@ -44,48 +45,23 @@ export default function WidgetCard({
         let finalLatestScore = latestScore;
 
         if (demoMode) {
-            // Generate robust demo data
+            // Use store demo data directly to match other tabs/screens
             finalAccounts = [{ id: 'demo-1', name: 'Demo Prop Account', size: '$100,000', type: 'Prop-Firm', currency: 'USD' }];
-            const symbols = ['BTCUSD', 'EURUSD', 'GOLD', 'NAS100', 'AAPL', 'ETHUSD'];
-            const mistakes = ['FOMO', 'Revenge Trading', 'Late Entry', 'Overleveraged', 'Poor Risk Mgmt'];
-            const emotions = ['Confident', 'Anxious', 'Neutral', 'Greedy'];
-            
-            finalTrades = Array.from({ length: 45 }).map((_, i) => {
-                const side = Math.random() > 0.5 ? 'LONG' : 'SHORT';
-                const isWin = Math.random() > 0.45;
-                const pnl = isWin ? (Math.random() * 1500 + 200) : -(Math.random() * 800 + 100);
-                const date = new Date();
-                date.setDate(date.getDate() - (45 - i));
-                date.setHours(9 + Math.floor(Math.random() * 8), Math.floor(Math.random() * 60));
-                
-                return {
-                    id: `demo-t-${i}`,
-                    symbol: symbols[Math.floor(Math.random() * symbols.length)],
-                    side,
-                    status: 'CLOSED',
-                    pnl,
-                    pnl_pct: pnl / 1000,
-                    entry_price: 1000 + Math.random() * 50000,
-                    exit_price: 1000 + Math.random() * 50000,
-                    lot_size: 1.0,
-                    created_at: date.toISOString(),
-                    entry_time: date.toISOString(),
-                    mistake_tags: Math.random() > 0.7 ? [mistakes[Math.floor(Math.random() * mistakes.length)]] : [],
-                    emotion: emotions[Math.floor(Math.random() * emotions.length)],
-                    tags: ['Demo', 'Trend'],
-                    mae: Math.random() * 200,
-                    mfe: Math.random() * 1500,
-                    r_multiple: pnl / 500
-                } as any;
-            });
-
-            finalPulses = Array.from({ length: 10 }).map((_, i) => ({
-                emotional_rating: 5 + Math.floor(Math.random() * 5),
-                mental_state: 'Focused',
-                created_at: new Date(Date.now() - i * 86400000).toISOString()
-            })) as any;
-
+            finalTrades = trades;
+            finalPulses = pulses;
             finalLatestScore = { total_score: 84 } as any;
+        }
+
+        // Sync theme to iframe document
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (iframeDoc) {
+          if (theme === 'light') {
+            iframeDoc.documentElement.classList.add('light-mode');
+            iframeDoc.body.classList.add('light-mode');
+          } else {
+            iframeDoc.documentElement.classList.remove('light-mode');
+            iframeDoc.body.classList.remove('light-mode');
+          }
         }
 
         const closedTrades = finalTrades.filter(t => t && t.status === 'CLOSED' && t.pnl !== null);
@@ -182,7 +158,7 @@ export default function WidgetCard({
       handleLoad();
     }
     return () => iframe.removeEventListener('load', handleLoad);
-  }, [widgetId, trades, playbooks, calendarData, pulses, latestScore, demoMode]);
+  }, [widgetId, trades, playbooks, calendarData, pulses, latestScore, demoMode, theme]);
 
   if (!def) return null;
 
