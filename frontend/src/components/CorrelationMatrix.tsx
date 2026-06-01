@@ -173,6 +173,24 @@ export default function CorrelationMatrix({ symbols }: Props) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-bright)' }}>
                 <Link2 size={18}/>
                 <span style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.05em' }}>STRATEGIC CORRELATION MATRIX</span>
+                <span style={{ 
+                  fontSize: '0.55rem', 
+                  fontWeight: 800, 
+                  padding: '0.2rem 0.5rem', 
+                  background: 'rgba(245, 158, 11, 0.1)', 
+                  color: '#f59e0b', 
+                  border: '1px solid rgba(245, 158, 11, 0.25)', 
+                  borderRadius: '6px',
+                  letterSpacing: '0.05em',
+                  marginLeft: '0.65rem',
+                  verticalAlign: 'middle',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.25rem'
+                }}>
+                  <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }} />
+                  STILL UNDER DEVELOPMENT
+                </span>
             </div>
             {isRefreshing && <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}><RefreshCw size={14} color="var(--text-muted)"/></motion.div>}
         </div>

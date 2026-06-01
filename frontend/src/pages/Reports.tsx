@@ -147,7 +147,7 @@ export default function Reports() {
                     {(t.pnl || 0) >= 0 ? '+' : '-'}${Math.abs(t.pnl || 0).toLocaleString()}
                   </td>
                   <td style={{ padding: '1rem', textAlign: 'right', fontWeight: 900, color: (t.pnl_pct || 0) >= 0 ? '#10b981' : '#ef4444' }}>
-                    {(t.pnl_pct || 0) >= 0 ? '+' : '-'}{(t.pnl_pct || 0).toFixed(2)}%
+                    {(t.pnl_pct || 0) >= 0 ? '+' : '-'}{Math.abs(t.pnl_pct || 0).toFixed(2)}%
                   </td>
                   <td style={{ padding: '1rem', textAlign: 'right' }}>
                     <button className="icon-btn" style={{ padding: '0.4rem', background: 'var(--accent-dim)', color: 'var(--accent-bright)', borderRadius: '6px', border: 'none' }}>

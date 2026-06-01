@@ -329,6 +329,28 @@ export default function EconomicCalendar() {
   return (
     <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%', position: 'relative' }}>
       
+      {/* Still Under Development Banner */}
+      <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          padding: '0.75rem 1.25rem',
+          background: 'rgba(245, 158, 11, 0.08)',
+          border: '1px solid rgba(245, 158, 11, 0.2)',
+          borderRadius: '10px',
+          color: '#f59e0b',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+          backdropFilter: 'blur(4px)',
+          lineHeight: 1.4
+      }}>
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(245, 158, 11, 0.15)', fontSize: '0.75rem' }}>⚠️</span>
+          <div style={{ flex: 1 }}>
+              <span style={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '0.4rem' }}>Still Under Development / In Entwicklung:</span> Dieser Bereich befindet sich in der aktiven Entwicklung. Der Wirtschaftskalender und Newsfeed sind teils unvollständig oder laufen mit historischen Testdaten.
+          </div>
+      </div>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: '1rem', background: 'var(--bg-secondary)', padding: '0.25rem', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
             <button onClick={() => setActiveTab('CALENDAR')} style={{ padding: '0.5rem 1.5rem', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: 800, fontSize: '0.75rem', background: activeTab === 'CALENDAR' ? 'var(--accent)' : 'transparent', color: activeTab === 'CALENDAR' ? 'white' : 'var(--text-muted)', transition: 'all 0.2s' }}>CALENDAR</button>
