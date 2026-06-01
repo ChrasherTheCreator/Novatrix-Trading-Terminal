@@ -37,7 +37,7 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     // ── Database ──────────────────────────────────────────────────────────────
-    let db_path = "./novatrix.db";
+    let db_path = "./creatix.db";
     let opts =
         SqliteConnectOptions::from_str(&format!("sqlite:{}", db_path))?.create_if_missing(true);
     let pool = SqlitePool::connect_with(opts).await?;
@@ -85,7 +85,7 @@ async fn main() -> anyhow::Result<()> {
 
     // ── Start Server ──────────────────────────────────────────────────────────
     let addr = "0.0.0.0:3001";
-    info!("Novatrix backend listening on http://{}", addr);
+    info!("Creatix backend listening on http://{}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await?;
     axum::serve(listener, app).await?;
 

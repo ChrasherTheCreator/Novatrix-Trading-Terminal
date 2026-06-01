@@ -11,7 +11,7 @@ def add_trade(cursor, symbol, side, entry, sl, tp, pnl, rules, mistakes=[]):
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (trade_id, "1", symbol, side, entry, sl, tp, 0.1, 100, pnl, "CLOSED", json.dumps(rules), json.dumps(mistakes), now, now, now))
 
-conn = sqlite3.connect('backend/novatrix.db')
+conn = sqlite3.connect('backend/creatix.db')
 cursor = conn.cursor()
 
 # Simuliere 10 spezifische Trades

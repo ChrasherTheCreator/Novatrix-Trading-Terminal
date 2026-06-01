@@ -29,7 +29,7 @@ export default function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-logo">
         <div className="logo-icon">NX</div>
-        <span className="logo-text">NOVATRIX</span>
+        <span className="logo-text">CREATIX</span>
       </div>
 
       <nav className="sidebar-nav">

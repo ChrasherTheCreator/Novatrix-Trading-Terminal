@@ -86,6 +86,7 @@ export interface Trade {
   status: 'OPEN' | 'CLOSED'
   created_at: string
   entry_time?: string
+  exit_time?: string
   mae?: number
   mfe?: number
   slippage?: number
@@ -203,16 +204,46 @@ export interface CalendarDay {
   avg_mfe: number
 }
 
+const today = new Date()
+const d = (offset: number) => { const dt = new Date(today); dt.setDate(dt.getDate() - offset); return dt.toISOString() }
+
 const MOCK_TRADES: Trade[] = [
-    { id: '1', symbol: 'BTCUSD', side: 'LONG', entry_price: 62000, exit_price: 62800, pnl: 800, pnl_pct: 1.2, status: 'CLOSED', tags: ['Trend Alignment', 'Support Bounce'], mistake_tags: [], created_at: new Date().toISOString(), mae: 150, mfe: 1200 },
-    { id: '2', symbol: 'EURUSD', side: 'SHORT', entry_price: 1.0850, exit_price: 1.0880, pnl: -300, pnl_pct: -0.3, status: 'CLOSED', tags: ['RSI Overbought'], mistake_tags: ['FOMO'], created_at: new Date().toISOString(), mae: 40, mfe: 10 },
-    { id: '3', symbol: 'GOLD', side: 'LONG', entry_price: 2350, exit_price: 2354.5, pnl: 450, pnl_pct: 0.2, status: 'CLOSED', tags: ['Support Bounce'], mistake_tags: [], created_at: new Date().toISOString(), mae: 20, mfe: 600 },
-    { id: '4', symbol: 'SPX', side: 'SHORT', entry_price: 18200, exit_price: 18090, pnl: 1100, pnl_pct: 0.6, status: 'CLOSED', tags: ['Volume Spike', 'Trend Alignment'], mistake_tags: [], created_at: new Date().toISOString(), mae: 80, mfe: 1400 }
+  { id: '1', symbol: 'BTCUSD', side: 'LONG', entry_price: 62000, exit_price: 62800, pnl: 800, pnl_pct: 1.29, status: 'CLOSED', tags: ['Trend Alignment', 'Support Bounce'], mistake_tags: [], created_at: d(0), mae: 150, mfe: 1200, r_multiple: 2.1, strategy: 'Breakout', emotion: 'Confident' },
+  { id: '2', symbol: 'EURUSD', side: 'SHORT', entry_price: 1.0850, exit_price: 1.0880, pnl: -300, pnl_pct: -0.28, status: 'CLOSED', tags: ['RSI Overbought'], mistake_tags: ['FOMO', 'Oversize'], created_at: d(1), mae: 40, mfe: 10, r_multiple: -0.8, strategy: 'Mean Reversion', emotion: 'Anxious' },
+  { id: '3', symbol: 'XAUUSD', side: 'LONG', entry_price: 2350, exit_price: 2364.5, pnl: 1450, pnl_pct: 0.62, status: 'CLOSED', tags: ['Support Bounce', 'Institutional Level'], mistake_tags: [], created_at: d(2), mae: 20, mfe: 600, r_multiple: 3.2, strategy: 'Support Bounce', emotion: 'Focused' },
+  { id: '4', symbol: 'SPX500', side: 'SHORT', entry_price: 5220, exit_price: 5198, pnl: 2200, pnl_pct: 0.42, status: 'CLOSED', tags: ['Volume Spike', 'Trend Alignment'], mistake_tags: [], created_at: d(3), mae: 80, mfe: 1400, r_multiple: 2.8, strategy: 'Trend Following', emotion: 'Calm' },
+  { id: '5', symbol: 'GBPUSD', side: 'LONG', entry_price: 1.2640, exit_price: 1.2590, pnl: -500, pnl_pct: -0.40, status: 'CLOSED', tags: ['News Play'], mistake_tags: ['Chasing', 'No Confirmation'], created_at: d(4), mae: 90, mfe: 15, r_multiple: -1.2, strategy: 'News Play', emotion: 'FOMO' },
+  { id: '6', symbol: 'NASDAQ', side: 'LONG', entry_price: 18400, exit_price: 18620, pnl: 2200, pnl_pct: 1.20, status: 'CLOSED', tags: ['Breakout', 'Volume Spike'], mistake_tags: [], created_at: d(5), mae: 60, mfe: 900, r_multiple: 3.5, strategy: 'Breakout', emotion: 'Confident' },
+  { id: '7', symbol: 'USDJPY', side: 'SHORT', entry_price: 157.40, exit_price: 156.80, pnl: 600, pnl_pct: 0.38, status: 'CLOSED', tags: ['Resistance Rejection'], mistake_tags: [], created_at: d(7), mae: 30, mfe: 750, r_multiple: 2.0, strategy: 'Mean Reversion', emotion: 'Focused' },
+  { id: '8', symbol: 'BTCUSD', side: 'SHORT', entry_price: 63500, exit_price: 62100, pnl: 1400, pnl_pct: 2.21, status: 'CLOSED', tags: ['Distribution Zone', 'Trend Alignment'], mistake_tags: [], created_at: d(9), mae: 200, mfe: 1800, r_multiple: 4.1, strategy: 'Trend Following', emotion: 'Calm' },
+  { id: '9', symbol: 'ETHUSD', side: 'LONG', entry_price: 3420, exit_price: 3380, pnl: -400, pnl_pct: -1.17, status: 'CLOSED', tags: ['Support Bounce'], mistake_tags: ['Early Entry'], created_at: d(11), mae: 120, mfe: 40, r_multiple: -1.0, strategy: 'Support Bounce', emotion: 'Impatient' },
+  { id: '10', symbol: 'XAUUSD', side: 'LONG', entry_price: 2310, exit_price: null, pnl: null, pnl_pct: null, status: 'OPEN', tags: ['Accumulation Zone'], mistake_tags: [], created_at: d(0), mae: 15, mfe: 180, strategy: 'Position Trade', emotion: 'Confident' },
 ];
 
 const MOCK_PULSES: Pulse[] = [
-    { id: 'p1', account_id: '1', mental_state: 'Focused', emotional_rating: 8, notes: 'Feeling calm', created_at: new Date().toISOString(), tags: [] }
+  { id: 'p1', account_id: '1', mental_state: 'Focused', emotional_rating: 8, notes: 'Good sleep, clear head. Ready to execute.', created_at: d(0), tags: ['Disciplined', 'Calm'] },
+  { id: 'p2', account_id: '1', mental_state: 'Anxious', emotional_rating: 4, notes: 'News pending – feeling uncertain. Reduced size.', created_at: d(1), tags: ['Cautious'] },
+  { id: 'p3', account_id: '1', mental_state: 'Confident', emotional_rating: 9, notes: 'Perfect execution on all setups. Following the plan.', created_at: d(2), tags: ['In the Zone', 'Disciplined'] },
+  { id: 'p4', account_id: '1', mental_state: 'FOMO', emotional_rating: 3, notes: 'Chased a move I should have skipped. Lesson: wait for pullback.', created_at: d(4), tags: ['FOMO', 'Overtraded'] },
 ];
+
+const DEMO_PLAYBOOKS: Playbook[] = [
+  { id: 'pb1', name: 'London Breakout', description: 'Trade the first 30min London range expansion with volume confirmation.', winRate: 68, trades: 47, avgRR: 2.4, rules: [{text: 'Wait for 8:30 UTC candle close', weight: 3, done: true}, {text: 'Volume must be 1.5x average', weight: 3, done: true}, {text: 'SL below breakout candle', weight: 2, done: true}, {text: 'TP at previous high/low', weight: 2, done: true}] },
+  { id: 'pb2', name: 'Institutional Bounce', description: 'Long/Short at key institutional S/R levels with confluence.', winRate: 72, trades: 31, avgRR: 3.1, rules: [{text: 'Minimum 3 touches on S/R level', weight: 3, done: true}, {text: 'Higher timeframe trend aligned', weight: 3, done: true}, {text: 'Rejection wick or engulfing candle', weight: 2, done: true}] },
+  { id: 'pb3', name: 'BTC Trend Scalp', description: 'Scalp in direction of 4H trend on 15min pullbacks.', winRate: 61, trades: 89, avgRR: 1.8, rules: [{text: '4H EMA200 direction confirmed', weight: 3, done: true}, {text: 'RSI reset to 40-60 on pullback', weight: 2, done: true}, {text: 'Entry on 15min engulfing', weight: 2, done: true}] },
+];
+
+const DEMO_CALENDAR: Record<string, CalendarDay> = {
+  [d(0).slice(0,10)]: { pnl: 800, win_rate: 100, trades: 1, avg_mae: 150, avg_mfe: 1200 },
+  [d(1).slice(0,10)]: { pnl: -300, win_rate: 0, trades: 1, avg_mae: 40, avg_mfe: 10 },
+  [d(2).slice(0,10)]: { pnl: 1450, win_rate: 100, trades: 1, avg_mae: 20, avg_mfe: 600 },
+  [d(3).slice(0,10)]: { pnl: 2200, win_rate: 100, trades: 1, avg_mae: 80, avg_mfe: 1400 },
+  [d(4).slice(0,10)]: { pnl: -500, win_rate: 0, trades: 1, avg_mae: 90, avg_mfe: 15 },
+  [d(5).slice(0,10)]: { pnl: 2200, win_rate: 100, trades: 1, avg_mae: 60, avg_mfe: 900 },
+  [d(7).slice(0,10)]: { pnl: 600, win_rate: 100, trades: 1, avg_mae: 30, avg_mfe: 750 },
+  [d(9).slice(0,10)]: { pnl: 1400, win_rate: 100, trades: 1, avg_mae: 200, avg_mfe: 1800 },
+  [d(11).slice(0,10)]: { pnl: -400, win_rate: 0, trades: 1, avg_mae: 120, avg_mfe: 40 },
+};
 
 const cleanTags = (val: string | string[] | null | undefined): string[] => {
   if (!val) return [];
@@ -331,6 +362,7 @@ interface AppState {
   
   demoMode: boolean
   setDemoMode: (val: boolean) => void
+  enterDemoMode: () => void
 
   setPulses: (p: Pulse[]) => void
   addPulse: (p: Pulse) => void
@@ -549,6 +581,26 @@ export const useAppStore = create<AppState>()(
 
       demoMode: false,
       setDemoMode: (demoMode) => set({ demoMode }),
+
+      enterDemoMode: () => {
+        // Fully reset any persisted state, then inject rich mock data — no backend calls
+        localStorage.removeItem('creatix-app')
+        set({
+          demoMode: true,
+          user: { id: 'demo', username: 'Demo Trader', email: 'demo@creatix.app' },
+          token: 'demo-token',
+          trades: MOCK_TRADES,
+          pulses: MOCK_PULSES,
+          playbooks: DEMO_PLAYBOOKS,
+          calendarData: DEMO_CALENDAR,
+          activeView: 'dashboard',
+          accounts: [{ id: '1', name: 'Creatix Demo Account', size: '$100,000', type: 'Prop-Firm', currency: 'USD', maxDD: '10%', profitTarget: '10%' }],
+          riskSettings: { breakeven: '0.2', dailyDD: '2', riskPerTrade: '1', maxLots: '3', sessionAlerts: false },
+          connections: [{ id: 'mt5', name: 'MetaTrader 5', desc: 'Demo simulation bridge', status: 'Connected' }],
+          newsStatus: 'OFFLINE',
+          news: [],
+        })
+      },
 
       setPulses: (pulses) => set({ pulses }),
       addPulse: (pulse) => set((s) => ({ pulses: [pulse, ...s.pulses] })),
@@ -803,13 +855,13 @@ export const useAppStore = create<AppState>()(
       },
 
       logout: () => {
-        set({ user: null, token: null })
-        localStorage.removeItem('novatrix-app')
+        set({ user: null, token: null, demoMode: false, trades: [], pulses: [], playbooks: [], calendarData: {}, accounts: [{ id: '1', name: 'FX Pro Account', size: '$50,000', type: 'Prop-Firm', currency: 'USD', maxDD: '10%' }] })
+        localStorage.removeItem('creatix-app')
         window.location.reload()
       },
     }),
     { 
-      name: 'novatrix-app',
+      name: 'creatix-app',
       partialize: (state) => ({ 
         theme: state.theme, activeView: state.activeView, activeSettingsTab: state.activeSettingsTab, trades: state.trades, accounts: state.accounts,
         riskSettings: state.riskSettings, playbooks: state.playbooks, connections: state.connections,

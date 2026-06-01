@@ -20,8 +20,8 @@ def read_excel_file(file_path):
         print(f"Error reading {file_path}: {e}")
     print("\n")
 
-file1 = r"C:\Users\Chris\dokumente\trading\novatrix\Resources for gemini\Mappe1.xlsx"
-file2 = r"C:\Users\Chris\dokumente\trading\novatrix\Resources for gemini\Sample Correlation Matrices from Tradingview.xlsx"
+file1 = r"C:\Users\Chris\dokumente\trading\creatix\Resources for gemini\Mappe1.xlsx"
+file2 = r"C:\Users\Chris\dokumente\trading\creatix\Resources for gemini\Sample Correlation Matrices from Tradingview.xlsx"
 
 read_excel_file(file1)
 read_excel_file(file2)

@@ -3,7 +3,7 @@ import uuid
 import json
 
 def seed_strategies():
-    conn = sqlite3.connect('backend/novatrix.db')
+    conn = sqlite3.connect('backend/creatix.db')
     cursor = conn.cursor()
 
     strategies = [

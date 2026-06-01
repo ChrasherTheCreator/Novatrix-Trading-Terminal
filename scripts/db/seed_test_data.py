@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timedelta
 import random
 
-conn = sqlite3.connect('backend/novatrix.db')
+conn = sqlite3.connect('backend/creatix.db')
 cursor = conn.cursor()
 
 # Clear existing test data

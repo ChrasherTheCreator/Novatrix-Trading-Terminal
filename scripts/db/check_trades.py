@@ -1,5 +1,5 @@
 import sqlite3
-db_path = "backend/novatrix.db"
+db_path = "backend/creatix.db"
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 try:

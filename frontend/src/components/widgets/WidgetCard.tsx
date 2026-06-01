@@ -115,7 +115,7 @@ export default function WidgetCard({
 
         // Build data payload
         const data = {
-          type: 'NOVATRIX_DATA',
+          type: 'CREATIX_DATA',
           widgetId,
           demoMode,
           totalPnl,
@@ -125,7 +125,7 @@ export default function WidgetCard({
           totalTrades: closedTrades.length,
           maxDrawdown,
           equity,
-          novatrixScore: finalLatestScore?.total_score || 0,
+          creatixScore: finalLatestScore?.total_score || 0,
           trades: finalTrades.map(t => ({
             id: t.id,
             pnl: t.pnl,

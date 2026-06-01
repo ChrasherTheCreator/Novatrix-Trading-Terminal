@@ -1,27 +1,27 @@
-# 🌌 Novatrix Trading Terminal
+# 🌌 Creatix Trading Terminal
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
 [![Rust: Axum](https://img.shields.io/badge/Backend-Rust%20%2F%20Axum-orange.svg)](https://www.rust-lang.org/)
 [![Frontend: React & Vite](https://img.shields.io/badge/Frontend-React%20%2F%20Vite%20%2F%20Tailwind%20v4-blue.svg)](https://react.dev/)
 [![E2E Testing: Playwright](https://img.shields.io/badge/E2E%20Tests-Playwright-green.svg)](https://playwright.dev/)
 
-Ein hochmodernes, performantes und voll personalisierbares Trading-Terminal sowie Journaling-Suite zur Professionalisierung des privaten Tradings. **Novatrix** kombiniert Echtzeit-Marktdatenanalyse, ein hochgradig modulares Widget-Raster-System, risikobewusstes Journaling und verhaltensanalytische Metriken in einer eleganten, glassmorphischen Benutzeroberfläche.
+Ein hochmodernes, performantes und voll personalisierbares Trading-Terminal sowie Journaling-Suite zur Professionalisierung des privaten Tradings. **Creatix** kombiniert Echtzeit-Marktdatenanalyse, ein hochgradig modulares Widget-Raster-System, risikobewusstes Journaling und verhaltensanalytische Metriken in einer eleganten, glassmorphischen Benutzeroberfläche.
 
 ---
 
 ## 🎯 Vision & Ziele
 
-Novatrix wurde entwickelt, um zwei der größten Probleme im modernen Retail-Trading zu lösen: **Datenfragmentierung** und **mangelnde emotionale Disziplin**.
+Creatix wurde entwickelt, um zwei der größten Probleme im modernen Retail-Trading zu lösen: **Datenfragmentierung** und **mangelnde emotionale Disziplin**.
 
 *   **Zusammenführung aller Datenströme**: Marktdaten, Wirtschaftsereignisse, historische Trades, statistische Korrelationen und persönliche Journal-Einträge existieren nicht mehr isoliert, sondern fließen in einem zentralen Dashboard zusammen.
-*   **Risiko- und Emotionskontrolle**: Ein integrierter "Drawdown Protector" und hochentwickelte psychologische Metriken (wie der *Novatrix Score*) helfen Tradern, emotionale Tiefs und fehlerhafte Verhaltensmuster proaktiv zu erkennen und zu unterbinden.
+*   **Risiko- und Emotionskontrolle**: Ein integrierter "Drawdown Protector" und hochentwickelte psychologische Metriken (wie der *Creatix Score*) helfen Tradern, emotionale Tiefs und fehlerhafte Verhaltensmuster proaktiv zu erkennen und zu unterbinden.
 *   **Volle Personalisierbarkeit**: Jedes Trading-Setup ist einzigartig. Durch das fortschrittliche Drag-and-Drop-Widget-System können Trader ihr Dashboard exakt auf ihre Strategien zuschneiden.
 
 ---
 
 ## 🛠️ Framework & Technologie-Stack
 
-Novatrix setzt auf eine moderne, strikt getrennte Client-Server-Architektur, um maximale Geschwindigkeit und Zuverlässigkeit zu garantieren.
+Creatix setzt auf eine moderne, strikt getrennte Client-Server-Architektur, um maximale Geschwindigkeit und Zuverlässigkeit zu garantieren.
 
 ```mermaid
 graph TD
@@ -39,7 +39,7 @@ graph TD
     end
 
     subgraph Data ["Datenschicht & APIs"]
-        DB[("novatrix.db (SQLite)")]
+        DB[("creatix.db (SQLite)")]
         External["TwelveData & Babypips (External APIs)"]
     end
 
@@ -74,7 +74,7 @@ graph TD
 Das Repository wurde sorgfältig strukturiert und bereinigt, um einen sauberen und professionellen Open-Source-Release zu gewährleisten:
 
 ```
-Novatrix/
+Creatix/
 ├── backend/                   # ⚙️ Rust Axum Backend
 │   ├── src/                   # Quellcode (Hauptserver, API-Routen, WebSocket, DB-Handler)
 │   ├── scripts/               # Hilfsscripte für lokale Tests und Schema-Analysen
@@ -113,12 +113,12 @@ Stelle sicher, dass folgende Software auf deinem System installiert ist:
 
 #### 1. Repository klonen
 ```bash
-git clone https://github.com/YourUsername/Novatrix.git
-cd Novatrix
+git clone https://github.com/YourUsername/Creatix.git
+cd Creatix
 ```
 
 #### 2. Backend starten
-Verschiebe dich in das Backend-Verzeichnis und starte den Rust-Server. Beim ersten Start wird die Datenbank `novatrix.db` im Backend-Ordner automatisch initialisiert und mit Standardwerten gefüllt.
+Verschiebe dich in das Backend-Verzeichnis und starte den Rust-Server. Beim ersten Start wird die Datenbank `creatix.db` im Backend-Ordner automatisch initialisiert und mit Standardwerten gefüllt.
 
 ```bash
 cd backend
@@ -150,7 +150,7 @@ npx playwright test
 
 ## 🛣️ Roadmap & Zukünftige Erweiterungen
 
-Novatrix befindet sich in stetiger Weiterentwicklung. Folgende Meilensteine sind für zukünftige Releases geplant:
+Creatix befindet sich in stetiger Weiterentwicklung. Folgende Meilensteine sind für zukünftige Releases geplant:
 
 ### 🔹 Phase 1: Broker-Integrationen & Live-Execution
 *   **Interactive Brokers & MetaTrader 5 APIs**: Direkte Anbindung zur automatischen Synchronisation von Live-Trades und Ausführungen ohne manuellen Import.

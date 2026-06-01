@@ -1,8 +1,8 @@
 // This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
-// © ChrashTradr & Novatrix Capital
+// © ChrashTradr & Creatix Capital
 
 //@version=6
-indicator("Correlation Heatmap Matrix by Novatrix Capital", "CorrMatrix", overlay = false)
+indicator("Correlation Heatmap Matrix by Creatix Capital", "CorrMatrix", overlay = false)
 
 // --- Color Settings ---
 appearance           = input.string("Darkmode", "Appearance", options = ["Darkmode", "Lightmode"])
@@ -150,7 +150,7 @@ if barstate.islast
     
     if active_count > 0
         table.merge_cells(Table, 0, 0, active_count, 0)
-        table.cell(Table, 0, 0, "NOVATRIX Correlation Matrix", bgcolor = colorHeaderBg, text_color = color.white, text_size = Size)
+        table.cell(Table, 0, 0, "CREATIX Correlation Matrix", bgcolor = colorHeaderBg, text_color = color.white, text_size = Size)
 
         for i = 0 to active_count - 1
             int real_idx_i = array.get(active_indices, i)

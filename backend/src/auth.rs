@@ -20,7 +20,7 @@ pub fn verify_password(password: &str, hashed: &str) -> Result<bool> {
 }
 
 pub fn generate_jwt(user_id: &str) -> Result<String> {
-    let secret = env::var("JWT_SECRET").unwrap_or_else(|_| "secret_novatrix_key_123".to_string());
+    let secret = env::var("JWT_SECRET").unwrap_or_else(|_| "secret_creatix_key_123".to_string());
     let expiration = Utc::now()
         .checked_add_signed(Duration::days(7))
         .expect("valid timestamp")
@@ -40,7 +40,7 @@ pub fn generate_jwt(user_id: &str) -> Result<String> {
 }
 
 pub fn validate_jwt(token: &str) -> Result<Claims> {
-    let secret = env::var("JWT_SECRET").unwrap_or_else(|_| "secret_novatrix_key_123".to_string());
+    let secret = env::var("JWT_SECRET").unwrap_or_else(|_| "secret_creatix_key_123".to_string());
     let validation = Validation::new(Algorithm::HS256);
 
     let token_data = decode::<Claims>(

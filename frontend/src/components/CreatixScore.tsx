@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useAppStore } from '../store/app'
 import { ShieldCheck } from 'lucide-react'
 
-export default function NovatrixScore() {
+export default function CreatixScore() {
   const { trades = [] } = useAppStore()
 
   const score = useMemo(() => {
@@ -32,7 +32,7 @@ export default function NovatrixScore() {
       <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '130px', height: '130px', background: 'var(--accent)', filter: 'blur(50px)', borderRadius: '50%', opacity: 0.3 }} />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 2 }}>
-        <h3 style={{ fontSize: '0.65rem', fontWeight: 900, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.15em' }}>NOVATRIX INDEX</h3>
+        <h3 style={{ fontSize: '0.65rem', fontWeight: 900, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.15em' }}>CREATIX INDEX</h3>
         <ShieldCheck size={16} color="var(--accent-bright)"/>
       </div>
 

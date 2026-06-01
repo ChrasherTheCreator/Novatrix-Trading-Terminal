@@ -1,7 +1,7 @@
 {
-  "name": "novatrix",
+  "name": "creatix",
   "version": "1.0.0",
-  "description": "Novatrix Trading Terminal",
+  "description": "Creatix Trading Terminal",
   "main": "index.js",
   "scripts": {
     "build": "cd frontend && npm install && npm run build"

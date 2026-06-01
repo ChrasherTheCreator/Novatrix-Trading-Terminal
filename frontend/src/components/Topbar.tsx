@@ -1,12 +1,12 @@
 import { useAppStore } from '../store/app'
-import { Bell, Search, Menu, User, Settings, LogOut, Sun, Moon, Info, AlertTriangle, CheckCircle, X, Database } from 'lucide-react'
+import { Bell, Search, Menu, User, Settings, LogOut, Sun, Moon, Info, AlertTriangle, CheckCircle, X } from 'lucide-react'
 import { useState } from 'react'
 
 export default function Topbar() {
   const { 
     activeView, setView, setActiveSettingsTab, theme, setTheme, user, logout,
     notifications, markNotificationRead, clearNotifications,
-    demoMode, setDemoMode
+    demoMode
   } = useAppStore()
   
   const [showProfileMenu, setShowProfileMenu] = useState(false)
@@ -44,22 +44,37 @@ export default function Topbar() {
         {/* Portal for Widget Toolbar */}
         <div id="widget-toolbar-portal" style={{ display: 'flex', alignItems: 'center', marginRight: '8px' }}></div>
 
-        {/* Demo Mode Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginRight: '1rem', padding: '4px 10px', background: demoMode ? 'var(--accent-dim)' : 'rgba(255,255,255,0.03)', borderRadius: '20px', border: `1px solid ${demoMode ? 'var(--accent)' : 'var(--border-subtle)'}`, transition: 'all 0.3s' }}>
-            <Database size={14} color={demoMode ? 'var(--accent-bright)' : 'var(--text-muted)'} />
-            <span style={{ fontSize: '0.65rem', fontWeight: 800, color: demoMode ? 'var(--accent-bright)' : 'var(--text-muted)', letterSpacing: '0.05em' }}>DEMO MODE</span>
-            <div 
-                onClick={() => setDemoMode(!demoMode)}
-                style={{ 
-                    width: '28px', height: '14px', background: demoMode ? 'var(--accent)' : '#333', 
-                    borderRadius: '7px', position: 'relative', cursor: 'pointer', transition: 'background 0.3s' 
-                }}>
-                <div style={{ 
-                    position: 'absolute', top: '2px', left: demoMode ? '16px' : '2px', 
-                    width: '10px', height: '10px', background: '#fff', borderRadius: '50%', transition: 'left 0.3s' 
-                }} />
-            </div>
-        </div>
+        {/* Demo Mode Banner */}
+        {demoMode && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '8px', marginRight: '8px',
+            padding: '5px 12px',
+            background: 'linear-gradient(135deg, rgba(250,204,21,0.15), rgba(245,158,11,0.08))',
+            borderRadius: '20px', border: '1px solid rgba(250,204,21,0.4)',
+            cursor: 'default'
+          }}>
+            <span style={{
+              width: '7px', height: '7px', borderRadius: '50%',
+              background: '#fbbf24',
+              boxShadow: '0 0 0 2px rgba(251,191,36,0.25)',
+              animation: 'pulse 2s infinite',
+              flexShrink: 0
+            }} />
+            <span style={{ fontSize: '11px', fontWeight: '800', color: '#fbbf24', letterSpacing: '0.06em' }}>
+              DEMO MODE
+            </span>
+            <button
+              onClick={() => { logout(); }}
+              style={{
+                background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)',
+                borderRadius: '10px', color: '#fbbf24', fontSize: '10px', fontWeight: '700',
+                cursor: 'pointer', padding: '2px 8px', letterSpacing: '0.05em'
+              }}
+            >
+              EXIT
+            </button>
+          </div>
+        )}
 
         <div className="search-bar">
           <Search size={16} />

@@ -55,7 +55,7 @@ export default function Reports() {
   }, [trades, closedTrades])
 
   const handleExport = () => {
-    downloadCSV(closedTrades, `novatrix_report_${strategyFilter.toLowerCase()}`)
+    downloadCSV(closedTrades, `creatix_report_${strategyFilter.toLowerCase()}`)
     toast.success('Filtered trade history exported')
   }
 

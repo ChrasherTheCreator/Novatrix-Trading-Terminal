@@ -65,7 +65,7 @@ def parse_correlation_file(file_path):
             
     return correlations
 
-file_path = r"C:\Users\Chris\dokumente\trading\novatrix\Resources for gemini\Sample Correlation Matrices from Tradingview.xlsx"
+file_path = r"C:\Users\Chris\dokumente\trading\creatix\Resources for gemini\Sample Correlation Matrices from Tradingview.xlsx"
 data = parse_correlation_file(file_path)
 
 unique_correlations = []

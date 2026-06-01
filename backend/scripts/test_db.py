@@ -1,6 +1,6 @@
 import sqlite3
 
-conn = sqlite3.connect('novatrix.db')
+conn = sqlite3.connect('creatix.db')
 c = conn.cursor()
 c.execute('SELECT count(*) FROM economic_events')
 count = c.fetchone()[0]

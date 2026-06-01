@@ -7,7 +7,7 @@ def check_table(cursor, table_name):
     for col in columns:
         print(f"ID: {col[0]}, Name: {col[1]}, Type: {col[2]}, NotNull: {col[3]}, Default: {col[4]}, PK: {col[5]}")
 
-db_path = "backend/novatrix.db"
+db_path = "backend/creatix.db"
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 

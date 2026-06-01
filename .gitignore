@@ -20,7 +20,7 @@ target/
 **/*.txt
 
 # Database
-backend/novatrix.db
+backend/creatix.db
 *.db
 *.db-journal
 

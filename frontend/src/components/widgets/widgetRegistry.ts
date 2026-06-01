@@ -53,8 +53,8 @@ export const WIDGET_REGISTRY: WidgetDef[] = [
     defaultW: 2, defaultH: 2, minW: 2, minH: 2, maxW: 4, maxH: 3, scalable: false
   },
   {
-    id: 'novatrix-score', name: 'Novatrix Score', icon: 'shield', category: 'KPI',
-    src: '/widgets/novatrix score.html',
+    id: 'creatix-score', name: 'Creatix Score', icon: 'shield', category: 'KPI',
+    src: '/widgets/creatix score.html',
     defaultW: 2, defaultH: 2, minW: 2, minH: 2, maxW: 4, maxH: 4, scalable: false
   },
   {
@@ -148,7 +148,7 @@ export const DEFAULT_DASHBOARD_LAYOUT: LayoutItem[] = [
   { widgetId: 'sharpe-ratio',      col: 4,  row: 0,  w: 2, h: 2 },
   { widgetId: 'winrate',           col: 6,  row: 0,  w: 2, h: 2 },
   { widgetId: 'total-trades',      col: 8,  row: 0,  w: 2, h: 2 },
-  { widgetId: 'novatrix-score',    col: 10, row: 0,  w: 2, h: 2 },
+  { widgetId: 'creatix-score',    col: 10, row: 0,  w: 2, h: 2 },
 
   { widgetId: 'cumulative-pnl',    col: 0,  row: 2,  w: 6, h: 6 },
   { widgetId: 'session-timer',     col: 6,  row: 2,  w: 2, h: 2 },
@@ -174,7 +174,7 @@ export const DEFAULT_ANALYTICS_LAYOUT: LayoutItem[] = [
 
   { widgetId: 'cumulative-pnl',       col: 0,  row: 2,  w: 6, h: 6 },
   { widgetId: 'drawdown-daily',       col: 6,  row: 2,  w: 4, h: 4 },
-  { widgetId: 'novatrix-score',       col: 10, row: 2,  w: 2, h: 2 },
+  { widgetId: 'creatix-score',       col: 10, row: 2,  w: 2, h: 2 },
   { widgetId: 'session-timer',        col: 10, row: 4,  w: 2, h: 2 },
 
   { widgetId: 'drawdown-session',     col: 6,  row: 6,  w: 4, h: 4 },

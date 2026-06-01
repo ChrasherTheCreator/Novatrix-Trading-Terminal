@@ -8,7 +8,7 @@ Alle 20 Widgets wurden analysiert. Breiten reichen von 250px bis 1100px:
 
 | Kategorie | Widgets | Originalbreite | Grid-Spalten (von 12) | Min-Höhe (Rows) |
 |---|---|---|---|---|
-| **Small KPI** | P&L Status, Profit Factor, Sharpe Ratio, Winrate, Total Trades, Novatrix Score, Session Timer, Equity Drawdown | 250px | **2** | 2 |
+| **Small KPI** | P&L Status, Profit Factor, Sharpe Ratio, Winrate, Total Trades, Creatix Score, Session Timer, Equity Drawdown | 250px | **2** | 2 |
 | **Medium** | Performance Radar (300px), Mistake Losses (350px), Playbook Efficiency (350px) | 300–350px | **3** | 3 |
 | **Medium-Large** | Asset Performance (440px), Scatter Plot (450px), Psych. Energy (460px) | 440–460px | **4** | 3–4 |
 | **Large (Chart)** | Drawdown Daily/Session (480px), Cumulative P&L (720px) | 480–720px | **4–6** | 3–4 |
@@ -63,7 +63,7 @@ Kernlogik:
 - Drag-from-Library: Widget aus Library auf Grid ziehen
 
 ### [NEW] [js/persistence.js](file:///c:/Users/Chris/Dokumente/Trading/Widget%20test%20project/js/persistence.js)
-- `saveLayout()` → LocalStorage key `novatrix-dashboard-layout`
+- `saveLayout()` → LocalStorage key `creatix-dashboard-layout`
 - `loadLayout()` → Aus LocalStorage lesen und Grid wiederherstellen
 - `exportLayout()` → JSON-Datei Download
 - `importLayout()` → JSON-Datei Upload und anwenden
@@ -90,7 +90,7 @@ Kernlogik:
 | Widget | MinW | MinH | DefaultW | DefaultH | Scalable |
 |---|---|---|---|---|---|
 | P&L Status, Profit Factor, etc. | 2 | 2 | 2 | 2 | Nein |
-| Novatrix Score, Session Timer | 2 | 2 | 2 | 3 | Nein |
+| Creatix Score, Session Timer | 2 | 2 | 2 | 3 | Nein |
 | Performance Radar | 3 | 3 | 3 | 4 | Ja |
 | Mistake Losses, Playbook | 3 | 3 | 3 | 4 | Ja (vertikal) |
 | Asset Performance | 4 | 3 | 4 | 3 | Ja (horizontal) |
