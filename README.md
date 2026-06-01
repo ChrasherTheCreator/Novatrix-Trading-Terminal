@@ -5,6 +5,8 @@
 [![Frontend: React & Vite](https://img.shields.io/badge/Frontend-React%20%2F%20Vite%20%2F%20Tailwind%20v4-blue.svg)](https://react.dev/)
 [![E2E Testing: Playwright](https://img.shields.io/badge/E2E%20Tests-Playwright-green.svg)](https://playwright.dev/)
 
+!!! This Project is still under development and has still some bugs and unfinished features !!!
+
 Ein hochmodernes, performantes und voll personalisierbares Trading-Terminal sowie Journaling-Suite zur Professionalisierung des privaten Tradings. **Creatix** kombiniert Echtzeit-Marktdatenanalyse, ein hochgradig modulares Widget-Raster-System, risikobewusstes Journaling und verhaltensanalytische Metriken in einer eleganten, glassmorphischen Benutzeroberfläche.
 
 ---
