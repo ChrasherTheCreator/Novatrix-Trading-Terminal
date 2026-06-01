@@ -305,7 +305,33 @@
                 transform: scale(1);
             }
         }
-    </style>
+    
+        .insufficient-data-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 10, 18, 0.9);
+            backdrop-filter: blur(4px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            text-align: center;
+            padding: 20px;
+        }
+        .insufficient-data-overlay span {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--gloss-purple, #a855f7);
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+        .insufficient-data-overlay p {
+            font-size: 12px;
+            color: #888;
+            margin: 0;
+        }
+</style>
     <style>
         body {
             background: transparent !important;
@@ -326,6 +352,11 @@
 <body>
 
     <div class="obsidian-display">
+        <div class="insufficient-data-overlay" id="noDataOverlay">
+            <span>NEEDS MORE DATA</span>
+            <p>Add trades to see stats</p>
+        </div>
+
         <div class="header">
             <div class="header-title">
                 <h1>Temporal P&L Distribution</h1>
@@ -385,39 +416,61 @@
             xAxis.appendChild(hour);
         }
 
-        // Generate Cells
-        for (let d = 0; d < 7; d++) {
-            for (let h = 0; h < 24; h++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
+        function renderHeatmap(trades) {
+            grid.innerHTML = '';
+            
+            // Initialize 7x24 matrix
+            const matrix = Array.from({ length: 7 }, () => Array(24).fill(0));
+            
+            if (trades && trades.length > 0) {
+                trades.forEach(t => {
+                    const date = new Date(t.entry_time || t.created_at);
+                    const day = (date.getDay() + 6) % 7; // Monday = 0
+                    const hour = date.getHours();
+                    matrix[day][hour] += (t.pnl || 0);
+                });
+            }
 
-                // Deterministic Math for visual pattern
-                const val = Math.sin(d * 0.5) * Math.cos(h * 0.2) + (Math.random() * 0.2);
-                let colorClass, amount;
+            // Find max/min for scaling
+            const allVals = matrix.flat();
+            const maxPnl = Math.max(...allVals, 1);
+            const minPnl = Math.min(...allVals, -1);
 
-                if (val > 0.6) { colorClass = 'p-4'; amount = (val * 5000).toFixed(2); }
-                else if (val > 0.3) { colorClass = 'p-3'; amount = (val * 3000).toFixed(2); }
-                else if (val > 0.1) { colorClass = 'p-2'; amount = (val * 1500).toFixed(2); }
-                else if (val > 0.05) { colorClass = 'p-1'; amount = (val * 500).toFixed(2); }
-                else if (val > -0.05) { colorClass = 'neutral'; amount = "0.00"; }
-                else if (val > -0.3) { colorClass = 'l-2'; amount = (val * 1500).toFixed(2); }
-                else { colorClass = 'l-4'; amount = (val * 5000).toFixed(2); }
+            for (let d = 0; d < 7; d++) {
+                for (let h = 0; h < 24; h++) {
+                    const val = matrix[d][h];
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
 
-                cell.classList.add(colorClass);
+                    let colorClass = 'neutral';
+                    if (val > 0) {
+                        const intensity = val / maxPnl;
+                        if (intensity > 0.75) colorClass = 'p-4';
+                        else if (intensity > 0.5) colorClass = 'p-3';
+                        else if (intensity > 0.25) colorClass = 'p-2';
+                        else colorClass = 'p-1';
+                    } else if (val < 0) {
+                        const intensity = val / minPnl;
+                        if (intensity > 0.75) colorClass = 'l-4';
+                        else if (intensity > 0.5) colorClass = 'l-3';
+                        else if (intensity > 0.25) colorClass = 'l-2';
+                        else colorClass = 'l-1';
+                    }
 
-                // Tooltip
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.innerHTML = `<strong>${days[d]} ${h}:00</strong><br/>${val > 0 ? '+' : ''}$${amount}`;
-                cell.appendChild(tooltip);
+                    cell.classList.add(colorClass);
 
-                // Staggered Animation
-                cell.style.animation = `cellFade 0.6s ease forwards ${(d * 24 + h) * 0.003}s`;
-                cell.style.opacity = '0';
+                    // Tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.innerHTML = `<strong>${days[d]} ${h}:00</strong><br/>${val >= 0 ? '+' : ''}$${val.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+                    cell.appendChild(tooltip);
 
-                grid.appendChild(cell);
+                    grid.appendChild(cell);
+                }
             }
         }
+
+        renderHeatmap([]);
     </script>
 
     <!-- Novatrix Data Bridge -->
@@ -425,92 +478,22 @@
         window.addEventListener('message', function (e) {
             if (!e.data || e.data.type !== 'NOVATRIX_DATA') return;
             var d = e.data;
-            try {
-                switch (d.widgetId) {
-                    case 'pnl-status': {
-                        var el = document.getElementById('profitDisplay');
-                        var pctEl = document.getElementById('percentageDisplay');
-                        if (el) {
-                            var pnl = d.totalPnl || 0;
-                            var isPos = pnl >= 0;
-                            el.innerText = (isPos ? '+' : '-') + Math.abs(pnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                            el.className = 'profit-value ' + (isPos ? 'is-positive' : 'is-negative');
-                            if (typeof adjustFontSize === 'function') adjustFontSize();
-                        }
-                        if (pctEl && d.totalTrades > 0) {
-                            var pct = ((d.totalPnl / 10000) * 100);
-                            pctEl.innerText = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
-                            pctEl.className = 'percentage ' + (pct >= 0 ? 'is-positive' : 'is-negative');
-                        }
-                        break;
-                    }
-                    case 'profit-factor': {
-                        var el = document.getElementById('profitDisplay');
-                        var pctEl = document.getElementById('percentageDisplay');
-                        if (el) {
-                            var pf = d.profitFactor || 0;
-                            el.innerText = pf.toFixed(2);
-                            el.className = 'profit-value ' + (pf >= 1 ? 'is-positive' : 'is-negative');
-                        }
-                        if (pctEl) {
-                            pctEl.innerText = pf >= 1.5 ? 'STRONG' : pf >= 1 ? 'FAIR' : 'WEAK';
-                            pctEl.className = 'percentage ' + (pf >= 1 ? 'is-positive' : 'is-negative');
-                        }
-                        break;
-                    }
-                    case 'sharpe-ratio': {
-                        var el = document.getElementById('sharpeDisplay') || document.getElementById('profitDisplay');
-                        var pctEl = document.getElementById('percentageDisplay');
-                        if (el) {
-                            var sr = d.sharpeRatio || 0;
-                            el.innerText = sr.toFixed(2);
-                            el.className = el.className.replace(/is-\w+/g, '') + (sr >= 1 ? ' is-positive' : sr >= 0 ? '' : ' is-negative');
-                        }
-                        if (pctEl) {
-                            pctEl.innerText = sr >= 2 ? 'EXCELLENT' : sr >= 1 ? 'GOOD' : sr >= 0 ? 'FAIR' : 'POOR';
-                            pctEl.className = 'percentage ' + (sr >= 1 ? 'is-positive' : 'is-negative');
-                        }
-                        break;
-                    }
-                    case 'winrate': {
-                        var el = document.getElementById('winrateDisplay');
-                        var pctEl = document.getElementById('percentageDisplay');
-                        if (el) {
-                            el.innerText = (d.winRate || 0).toFixed(2) + '%';
-                        }
-                        if (pctEl) {
-                            var wr = d.winRate || 0;
-                            pctEl.innerText = wr >= 50 ? 'ABOVE AVG' : 'BELOW AVG';
-                            pctEl.className = 'percentage ' + (wr >= 50 ? 'is-positive' : 'is-negative');
-                        }
-                        break;
-                    }
-                    case 'total-trades': {
-                        var el = document.getElementById('tradesDisplay') || document.querySelector('.profit-value, .winrate-value, h1');
-                        if (el) {
-                            el.innerText = String(d.totalTrades || 0);
-                        }
-                        break;
-                    }
-                    case 'novatrix-score': {
-                        var el = document.querySelector('.score-value, .profit-value, h1');
-                        if (el) {
-                            el.innerText = String(d.novatrixScore || 0);
-                        }
-                        break;
-                    }
-                    case 'equity-drawdown': {
-                        var el = document.querySelector('.drawdown-value, .profit-value, h1');
-                        if (el) {
-                            var dd = d.maxDrawdown || 0;
-                            el.innerText = dd.toFixed(2) + '%';
-                        }
-                        break;
-                    }
-                }
-            } catch (err) { /* silently ignore */ }
+        var overlay = document.getElementById('noDataOverlay');
+        if (overlay) {
+            var showOverlay = d.totalTrades < 1 && !d.demoMode;
+            overlay.style.display = showOverlay ? 'flex' : 'none';
+        }
+
+            if (d.trades) {
+                renderHeatmap(d.trades);
+                
+                // Update stats summary if possible
+                // Find peak performance hour
+                // ... (optional refinement)
+            }
         });
     </script>
+
 </body>
 
 </html>

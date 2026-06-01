@@ -198,7 +198,33 @@
             user-select: none;
             font-weight: 300;
         }
-    </style>
+    
+        .insufficient-data-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 10, 18, 0.9);
+            backdrop-filter: blur(4px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            text-align: center;
+            padding: 20px;
+        }
+        .insufficient-data-overlay span {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--gloss-purple, #a855f7);
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+        .insufficient-data-overlay p {
+            font-size: 12px;
+            color: #888;
+            margin: 0;
+        }
+</style>
 <style> 
   body { 
       background: transparent !important; 
@@ -218,6 +244,11 @@
 <body>
 
     <div class="obsidian-display">
+        <div class="insufficient-data-overlay" id="noDataOverlay">
+            <span>NEEDS MORE DATA</span>
+            <p>Add trades to see stats</p>
+        </div>
+
         <header class="header">
             <div class="title-group">
                 <h2>Cumulative Profit</h2>
@@ -255,19 +286,8 @@
     </div>
 
     <script>
-        const data = [
-            { date: 'SEP 01', value: 10000 },
-            { date: 'SEP 05, 9:51 AM', value: 25340 },
-            { date: 'SEP 10', value: 32680 },
-            { date: 'SEP 15, 7:50 PM', value: 23880 },
-            { date: 'SEP 20', value: 61050 },
-            { date: 'SEP 25, 9:50 AM', value: 54048 },
-            { date: 'SEP 30', value: 95560 },
-            { date: 'OCT 05, 1:42 PM', value: 92000 },
-            { date: 'OCT 10', value: 109000 },
-            { date: 'OCT 15, 12:10 AM', value: 108000 },
-            { date: 'OCT 20', value: 132000 },
-            { date: 'OCT 25, 5:34 AM', value: 142840 }
+        let chartData = [
+            { date: 'SEP 01', value: 0 }
         ];
 
         const svg = document.getElementById('svgGraph');
@@ -280,16 +300,16 @@
         const hoverLine = document.getElementById('hoverLine');
         const focusPoint = document.getElementById('focusPoint');
         const tooltip = document.getElementById('tooltip');
+        const totalDisplay = document.getElementById('totalDisplay');
 
         const width = 1000;
         const height = 512;
         const padding = { top: 20, right: 20, bottom: 50, left: 70 };
+        let points = [];
 
-        const rawMax = Math.max(...data.map(d => d.value));
-
-        // Funktion für markante Abstände
-        function getSmartStep(max) {
-            const rawStep = max / 5;
+        function getSmartStep(max, min) {
+            const range = max - min;
+            const rawStep = (range || 1000) / 5;
             const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
             const res = rawStep / magnitude;
             let step;
@@ -300,59 +320,73 @@
             return step * magnitude;
         }
 
-        const stepSize = getSmartStep(rawMax);
-        const chartMax = Math.ceil(rawMax / stepSize) * stepSize;
+        function renderChart() {
+            // Clear existing
+            gridLayer.innerHTML = '';
+            yAxisLabels.innerHTML = '';
+            xAxisLabels.innerHTML = '';
 
-        // Generate Grid and Y Labels mit neuer Logik
-        for (let v = 0; v <= chartMax; v += stepSize) {
-            const y = height - (v / chartMax * (height - padding.top)) - padding.bottom;
-            // Da wir hier im SVG Koordinatensystem sind, passen wir y leicht an:
-            const yPos = height - ((v / chartMax) * (height - 60)) - 40;
+            const values = chartData.map(d => d.value);
+            const rawMax = Math.max(...values, 100);
+            const rawMin = Math.min(...values, 0);
+            
+            const stepSize = getSmartStep(rawMax, rawMin);
+            const chartMax = Math.ceil(rawMax / stepSize) * stepSize;
+            const chartMin = Math.floor(rawMin / stepSize) * stepSize;
+            const chartRange = chartMax - chartMin || 1;
 
-            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            line.setAttribute("x1", padding.left);
-            line.setAttribute("y1", yPos);
-            line.setAttribute("x2", width);
-            line.setAttribute("y2", yPos);
-            line.setAttribute("stroke", "var(--grid-line)");
-            gridLayer.appendChild(line);
+            // Generate Grid and Y Labels
+            for (let v = chartMin; v <= chartMax; v += stepSize) {
+                const yPos = height - (((v - chartMin) / chartRange) * (height - 60)) - 40;
 
-            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-            text.setAttribute("x", 0);
-            text.setAttribute("y", yPos + 4);
-            text.textContent = `$${(v / 1000).toFixed(0)}K`;
-            yAxisLabels.appendChild(text);
-        }
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute("x1", padding.left);
+                line.setAttribute("y1", yPos);
+                line.setAttribute("x2", width);
+                line.setAttribute("y2", yPos);
+                line.setAttribute("stroke", "var(--grid-line)");
+                gridLayer.appendChild(line);
 
-        // Generate Points and Path (angepasst an chartMax)
-        const points = data.map((d, i) => {
-            const x = padding.left + (i * (width - padding.left) / (data.length - 1));
-            const y = height - ((d.value / chartMax) * (height - 60)) - 40;
-            return { x, y, ...d };
-        });
-
-        const pathData = points.reduce((acc, p, i) =>
-            acc + (i === 0 ? `M ${p.x} ${p.y}` : ` L ${p.x} ${p.y}`), "");
-
-        mainPath.setAttribute("d", pathData);
-        const fillData = pathData + ` L ${points[points.length - 1].x} ${height - 40} L ${points[0].x} ${height - 40} Z`;
-        fillPath.setAttribute("d", fillData);
-
-        // X Labels
-        data.forEach((d, i) => {
-            if (i % 2 === 0) {
-                const x = padding.left + (i * (width - padding.left) / (data.length - 1));
                 const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                text.setAttribute("x", x);
-                text.setAttribute("y", height - 10);
-                text.setAttribute("text-anchor", "middle");
-                text.textContent = d.date;
-                xAxisLabels.appendChild(text);
+                text.setAttribute("x", 0);
+                text.setAttribute("y", yPos + 4);
+                text.textContent = v >= 1000 || v <= -1000 ? `$${(v / 1000).toFixed(1)}K` : `$${v.toFixed(0)}`;
+                yAxisLabels.appendChild(text);
             }
-        });
+
+            // Generate Points
+            points = chartData.map((d, i) => {
+                const x = padding.left + (i * (width - padding.left) / (Math.max(chartData.length - 1, 1)));
+                const y = height - (((d.value - chartMin) / chartRange) * (height - 60)) - 40;
+                return { x, y, ...d };
+            });
+
+            const pathData = points.reduce((acc, p, i) =>
+                acc + (i === 0 ? `M ${p.x} ${p.y}` : ` L ${p.x} ${p.y}`), "");
+
+            mainPath.setAttribute("d", pathData);
+            const zeroY = height - (((0 - chartMin) / chartRange) * (height - 60)) - 40;
+            const fillData = pathData + ` L ${points[points.length - 1].x} ${zeroY} L ${points[0].x} ${zeroY} Z`;
+            fillPath.setAttribute("d", fillData);
+
+            // X Labels
+            const step = Math.ceil(chartData.length / 6);
+            chartData.forEach((d, i) => {
+                if (i % step === 0 || i === chartData.length - 1) {
+                    const x = padding.left + (i * (width - padding.left) / (Math.max(chartData.length - 1, 1)));
+                    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    text.setAttribute("x", x);
+                    text.setAttribute("y", height - 10);
+                    text.setAttribute("text-anchor", "middle");
+                    text.textContent = d.date;
+                    xAxisLabels.appendChild(text);
+                }
+            });
+        }
 
         // Interaction
         viewport.addEventListener('mousemove', (e) => {
+            if (!points.length) return;
             const rect = svg.getBoundingClientRect();
             const mouseX = (e.clientX - rect.left) * (width / rect.width);
             let closest = points[0];
@@ -372,12 +406,14 @@
             tooltip.style.left = `${(closest.x / width) * 100}%`;
             tooltip.style.top = `${(closest.y / height) * 100}%`;
             document.getElementById('ttDate').textContent = closest.date;
-            document.getElementById('ttValue').textContent = `$${closest.value.toLocaleString()}`;
+            document.getElementById('ttValue').textContent = `$${closest.value.toLocaleString(undefined, {minimumFractionDigits:2})}`;
         });
 
         viewport.addEventListener('mouseleave', () => {
             hoverLine.style.opacity = "0"; focusPoint.style.opacity = "0"; tooltip.style.opacity = "0";
         });
+
+        renderChart();
     </script>
 
     <!-- Novatrix Data Bridge -->
@@ -385,94 +421,40 @@
     window.addEventListener('message', function(e) {
         if (!e.data || e.data.type !== 'NOVATRIX_DATA') return;
         var d = e.data;
-        try {
-            switch(d.widgetId) {
-                case 'pnl-status': {
-                    var el = document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var pnl = d.totalPnl || 0;
-                        var isPos = pnl >= 0;
-                        el.innerText = (isPos ? '+' : '-') + '
+        var overlay = document.getElementById('noDataOverlay');
+        if (overlay) {
+            var showOverlay = d.totalTrades < 2 && !d.demoMode;
+            overlay.style.display = showOverlay ? 'flex' : 'none';
+        }
 
-</html> + Math.abs(pnl).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                        el.className = 'profit-value ' + (isPos ? 'is-positive' : 'is-negative');
-                        if (typeof adjustFontSize === 'function') adjustFontSize();
-                    }
-                    if (pctEl && d.totalTrades > 0) {
-                        var pct = ((d.totalPnl / 10000) * 100);
-                        pctEl.innerText = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
-                        pctEl.className = 'percentage ' + (pct >= 0 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'profit-factor': {
-                    var el = document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var pf = d.profitFactor || 0;
-                        el.innerText = pf.toFixed(2);
-                        el.className = 'profit-value ' + (pf >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    if (pctEl) {
-                        pctEl.innerText = pf >= 1.5 ? 'STRONG' : pf >= 1 ? 'FAIR' : 'WEAK';
-                        pctEl.className = 'percentage ' + (pf >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'sharpe-ratio': {
-                    var el = document.getElementById('sharpeDisplay') || document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var sr = d.sharpeRatio || 0;
-                        el.innerText = sr.toFixed(2);
-                        el.className = el.className.replace(/is-\w+/g, '') + (sr >= 1 ? ' is-positive' : sr >= 0 ? '' : ' is-negative');
-                    }
-                    if (pctEl) {
-                        pctEl.innerText = sr >= 2 ? 'EXCELLENT' : sr >= 1 ? 'GOOD' : sr >= 0 ? 'FAIR' : 'POOR';
-                        pctEl.className = 'percentage ' + (sr >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'winrate': {
-                    var el = document.getElementById('winrateDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        el.innerText = (d.winRate || 0).toFixed(2) + '%';
-                    }
-                    if (pctEl) {
-                        var wr = d.winRate || 0;
-                        pctEl.innerText = wr >= 50 ? 'ABOVE AVG' : 'BELOW AVG';
-                        pctEl.className = 'percentage ' + (wr >= 50 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'total-trades': {
-                    var el = document.getElementById('tradesDisplay') || document.querySelector('.profit-value, .winrate-value, h1');
-                    if (el) {
-                        el.innerText = String(d.totalTrades || 0);
-                    }
-                    break;
-                }
-                case 'novatrix-score': {
-                    var el = document.querySelector('.score-value, .profit-value, h1');
-                    if (el) {
-                        el.innerText = String(d.novatrixScore || 0);
-                    }
-                    break;
-                }
-                case 'equity-drawdown': {
-                    var el = document.querySelector('.drawdown-value, .profit-value, h1');
-                    if (el) {
-                        var dd = d.maxDrawdown || 0;
-                        el.innerText = dd.toFixed(2) + '%';
-                    }
-                    break;
-                }
+        
+        // Update header values if it's the specific widget or if we just want global sync
+        if (d.widgetId === 'cumulative-pnl' || d.totalPnl !== undefined) {
+            var totalEl = document.getElementById('totalDisplay');
+            if (totalEl) {
+                totalEl.innerText = (d.totalPnl >= 0 ? '+' : '-') + '$' + Math.abs(d.totalPnl || 0).toLocaleString(undefined, {minimumFractionDigits: 2});
             }
-        } catch(err) { /* silently ignore */ }
+        }
+
+        if (d.trades && d.trades.length > 0) {
+            // Rebuild chart data from trades
+            var sortedTrades = [...d.trades].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            var runningPnl = 0;
+            var newChartData = [{ date: 'START', value: 0 }];
+            
+            sortedTrades.forEach(t => {
+                runningPnl += (t.pnl || 0);
+                var dateObj = new Date(t.created_at);
+                var label = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                newChartData.push({ date: label, value: runningPnl });
+            });
+            
+            chartData = newChartData;
+            renderChart();
+        }
     });
     </script>
+
 </body>
 
 </html>

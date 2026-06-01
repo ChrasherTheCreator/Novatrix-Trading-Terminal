@@ -136,7 +136,33 @@
             line-height: 1.4;
             color: #d1d5db;
         }
-    </style>
+    
+        .insufficient-data-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 10, 18, 0.9);
+            backdrop-filter: blur(4px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            text-align: center;
+            padding: 20px;
+        }
+        .insufficient-data-overlay span {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--gloss-purple, #a855f7);
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+        .insufficient-data-overlay p {
+            font-size: 12px;
+            color: #888;
+            margin: 0;
+        }
+</style>
 <style> 
   body { 
       background: transparent !important; 
@@ -155,6 +181,11 @@
 <body>
 
     <div class="obsidian-display">
+        <div class="insufficient-data-overlay" id="noDataOverlay">
+            <span>NEEDS MORE DATA</span>
+            <p>Add trades to see stats</p>
+        </div>
+
         <div class="label">
             <span class="material-symbols-outlined" style="font-size: 16px;">menu_book</span>
             Playbook Efficiency
@@ -199,91 +230,61 @@
     window.addEventListener('message', function(e) {
         if (!e.data || e.data.type !== 'NOVATRIX_DATA') return;
         var d = e.data;
+        var overlay = document.getElementById('noDataOverlay');
+        if (overlay) {
+            var showOverlay = d.totalTrades === 0 && !d.demoMode;
+            overlay.style.display = showOverlay ? 'flex' : 'none';
+        }
+
+        if (d.widgetId !== 'playbook-efficiency') return;
+
         try {
-            switch(d.widgetId) {
-                case 'pnl-status': {
-                    var el = document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var pnl = d.totalPnl || 0;
-                        var isPos = pnl >= 0;
-                        el.innerText = (isPos ? '+' : '-') + '
-</html> + Math.abs(pnl).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                        el.className = 'profit-value ' + (isPos ? 'is-positive' : 'is-negative');
-                        if (typeof adjustFontSize === 'function') adjustFontSize();
+            var playbooks = d.playbooks || [];
+            var container = document.querySelector('.rule-container');
+            var edgeHighlight = document.querySelector('.edge-highlight');
+            
+            if (container) {
+                container.innerHTML = '';
+                // Sort by win rate desc, then by trade count desc
+                playbooks.sort(function(a, b) {
+                    if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+                    return b.trades - a.trades;
+                });
+
+                playbooks.slice(0, 3).forEach(function(p) {
+                    var item = document.createElement('div');
+                    item.className = 'rule-item';
+                    item.innerHTML = 
+                        '<div class="rule-header">' +
+                            '<span class="rule-name">' + p.name + '</span>' +
+                            '<span class="win-rate">' + p.winRate.toFixed(1) + '% WR</span>' +
+                        '</div>' +
+                        '<div class="progress-bar-bg">' +
+                            '<div class="progress-bar-fill" style="width: ' + p.winRate + '%;"></div>' +
+                        '</div>' +
+                        '<div class="stats-footer">Applied in ' + p.trades + ' trades</div>';
+                    container.appendChild(item);
+                });
+
+                if (playbooks.length === 0) {
+                    container.innerHTML = '<div style="color: var(--text-muted); text-align: center; margin-top: 40px;">No playbook data available</div>';
+                    if (edgeHighlight) edgeHighlight.style.display = 'none';
+                } else if (edgeHighlight) {
+                    edgeHighlight.style.display = 'flex';
+                    var best = playbooks[0];
+                    var edgeText = edgeHighlight.querySelector('.edge-text');
+                    if (edgeText && best.winRate > 60) {
+                        edgeText.innerHTML = 
+                            '<strong style="color: var(--phosphor-green); display: block; margin-bottom: 2px;">STRATEGY EDGE FOUND</strong>' +
+                            'Your highest probability setup is "' + best.name + '". Consider increasing position size when this rule is met.';
+                    } else if (edgeText) {
+                        edgeText.innerHTML = 
+                            '<strong style="color: var(--phosphor-purple); display: block; margin-bottom: 2px;">INSIGHT</strong>' +
+                            'Keep following your playbook rules to build a statistical edge.';
                     }
-                    if (pctEl && d.totalTrades > 0) {
-                        var pct = ((d.totalPnl / 10000) * 100);
-                        pctEl.innerText = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
-                        pctEl.className = 'percentage ' + (pct >= 0 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'profit-factor': {
-                    var el = document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var pf = d.profitFactor || 0;
-                        el.innerText = pf.toFixed(2);
-                        el.className = 'profit-value ' + (pf >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    if (pctEl) {
-                        pctEl.innerText = pf >= 1.5 ? 'STRONG' : pf >= 1 ? 'FAIR' : 'WEAK';
-                        pctEl.className = 'percentage ' + (pf >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'sharpe-ratio': {
-                    var el = document.getElementById('sharpeDisplay') || document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var sr = d.sharpeRatio || 0;
-                        el.innerText = sr.toFixed(2);
-                        el.className = el.className.replace(/is-\w+/g, '') + (sr >= 1 ? ' is-positive' : sr >= 0 ? '' : ' is-negative');
-                    }
-                    if (pctEl) {
-                        pctEl.innerText = sr >= 2 ? 'EXCELLENT' : sr >= 1 ? 'GOOD' : sr >= 0 ? 'FAIR' : 'POOR';
-                        pctEl.className = 'percentage ' + (sr >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'winrate': {
-                    var el = document.getElementById('winrateDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        el.innerText = (d.winRate || 0).toFixed(2) + '%';
-                    }
-                    if (pctEl) {
-                        var wr = d.winRate || 0;
-                        pctEl.innerText = wr >= 50 ? 'ABOVE AVG' : 'BELOW AVG';
-                        pctEl.className = 'percentage ' + (wr >= 50 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'total-trades': {
-                    var el = document.getElementById('tradesDisplay') || document.querySelector('.profit-value, .winrate-value, h1');
-                    if (el) {
-                        el.innerText = String(d.totalTrades || 0);
-                    }
-                    break;
-                }
-                case 'novatrix-score': {
-                    var el = document.querySelector('.score-value, .profit-value, h1');
-                    if (el) {
-                        el.innerText = String(d.novatrixScore || 0);
-                    }
-                    break;
-                }
-                case 'equity-drawdown': {
-                    var el = document.querySelector('.drawdown-value, .profit-value, h1');
-                    if (el) {
-                        var dd = d.maxDrawdown || 0;
-                        el.innerText = dd.toFixed(2) + '%';
-                    }
-                    break;
                 }
             }
-        } catch(err) { /* silently ignore */ }
+        } catch(err) { console.error('Error updating playbook-efficiency widget:', err); }
     });
     </script>
 </body>

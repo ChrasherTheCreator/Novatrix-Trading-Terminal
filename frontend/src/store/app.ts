@@ -329,6 +329,9 @@ interface AppState {
   calendarData: Record<string, CalendarDay>
   isCalendarLoading: boolean
   
+  demoMode: boolean
+  setDemoMode: (val: boolean) => void
+
   setPulses: (p: Pulse[]) => void
   addPulse: (p: Pulse) => void
   setJournals: (j: DailyJournal[]) => void
@@ -544,6 +547,9 @@ export const useAppStore = create<AppState>()(
       calendarData: {},
       isCalendarLoading: false,
 
+      demoMode: false,
+      setDemoMode: (demoMode) => set({ demoMode }),
+
       setPulses: (pulses) => set({ pulses }),
       addPulse: (pulse) => set((s) => ({ pulses: [pulse, ...s.pulses] })),
       setJournals: (journals) => set({ journals }),
@@ -743,6 +749,7 @@ export const useAppStore = create<AppState>()(
       resetToMocks: () => set({ trades: MOCK_TRADES, pulses: MOCK_PULSES, activeView: 'dashboard' }),
 
       login: async (email, password) => {
+        console.log(`Attempting login to ${API_URL}/api/auth/login`);
         try {
           const res = await fetch(`${API_URL}/api/auth/login`, { 
             method: 'POST', 
@@ -752,16 +759,24 @@ export const useAppStore = create<AppState>()(
             }, 
             body: JSON.stringify({ email, password }) 
           })
+          
           if (res.ok) {
             const data = await res.json()
             set({ user: data.user, token: data.token })
             return true
+          } else {
+            const errorText = await res.text();
+            console.error(`Login failed with status ${res.status}: ${errorText}`);
+            return false;
           }
-          return false
-        } catch (e) { return false }
+        } catch (err) { 
+          console.error('Login connection error. Check if backend is running and API_URL is correct.', err);
+          return false;
+        }
       },
 
       register: async (username, email, password) => {
+        console.log(`Attempting registration to ${API_URL}/api/auth/register`);
         try {
           const res = await fetch(`${API_URL}/api/auth/register`, { 
             method: 'POST', 
@@ -771,13 +786,20 @@ export const useAppStore = create<AppState>()(
             }, 
             body: JSON.stringify({ username, email, password }) 
           })
+          
           if (res.ok) {
             const data = await res.json()
             set({ user: data.user, token: data.token })
             return true
+          } else {
+            const errorText = await res.text();
+            console.error(`Registration failed with status ${res.status}: ${errorText}`);
+            return false;
           }
-          return false
-        } catch (e) { return false }
+        } catch (err) { 
+          console.error('Registration connection error. Check if backend is running and API_URL is correct.', err);
+          return false;
+        }
       },
 
       logout: () => {

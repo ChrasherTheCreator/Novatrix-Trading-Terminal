@@ -130,7 +130,33 @@
             color: #888;
             line-height: 1.4;
         }
-    </style>
+    
+        .insufficient-data-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 10, 18, 0.9);
+            backdrop-filter: blur(4px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            text-align: center;
+            padding: 20px;
+        }
+        .insufficient-data-overlay span {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--gloss-purple, #a855f7);
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+        .insufficient-data-overlay p {
+            font-size: 12px;
+            color: #888;
+            margin: 0;
+        }
+</style>
 <style> 
   body { 
       background: transparent !important; 
@@ -149,6 +175,11 @@
 <body>
 
     <div class="obsidian-display">
+        <div class="insufficient-data-overlay" id="noDataOverlay">
+            <span>NEEDS MORE DATA</span>
+            <p>Add trades to see stats</p>
+        </div>
+
         <div class="label">
             <span class="material-symbols-outlined" style="font-size: 16px;">category</span>
             Asset Performance
@@ -201,97 +232,81 @@
     </div>
 
 
+    <script>
+        function renderAssets(trades) {
+            const list = document.querySelector('.asset-list');
+            list.innerHTML = '';
+            if (!trades || trades.length === 0) return;
+
+            // Group by symbol
+            const groups = {};
+            trades.forEach(t => {
+                const sym = t.symbol || 'Unknown';
+                if (!groups[sym]) groups[sym] = { wins: 0, losses: 0, total: 0, winPnl: 0, lossPnl: 0 };
+                groups[sym].total++;
+                if (t.pnl > 0) {
+                    groups[sym].wins++;
+                    groups[sym].winPnl += t.pnl;
+                } else if (t.pnl < 0) {
+                    groups[sym].losses++;
+                    groups[sym].lossPnl += Math.abs(t.pnl);
+                }
+            });
+
+            const sortedAssets = Object.entries(groups)
+                .map(([name, s]) => ({
+                    name,
+                    winrate: (s.wins / s.total) * 100,
+                    pf: s.lossPnl === 0 ? (s.winPnl > 0 ? 5.0 : 0) : s.winPnl / s.lossPnl,
+                    total: s.total
+                }))
+                .sort((a, b) => b.total - a.total)
+                .slice(0, 5);
+
+            sortedAssets.forEach(a => {
+                const row = document.createElement('div');
+                row.className = 'asset-row';
+                
+                const pfClass = a.pf >= 2 ? 'pf-high' : a.pf >= 1 ? 'pf-mid' : 'pf-low';
+                
+                row.innerHTML = `
+                    <span class="asset-name">${a.name}</span>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: ${a.winrate}%;"></div>
+                    </div>
+                    <span class="pf-badge ${pfClass}">${a.pf.toFixed(2)}</span>
+                `;
+                list.appendChild(row);
+            });
+            
+            // Insight
+            const best = sortedAssets.sort((a,b) => b.pf - a.pf)[0];
+            const worst = sortedAssets.sort((a,b) => a.pf - b.pf)[0];
+            const insight = document.querySelector('.footer-insight');
+            if (insight && best && worst) {
+                insight.innerHTML = `<strong>FOCUS INSIGHT:</strong><br>
+                Your edge is strongest on <strong>${best.name}</strong> (PF: ${best.pf.toFixed(2)}). 
+                ${worst.pf < 1 ? `Performance on <strong>${worst.name}</strong> is dragging you down.` : `Keep refining your strategy on ${worst.name}.`}`;
+            }
+        }
+    </script>
+
     <!-- Novatrix Data Bridge -->
     <script>
     window.addEventListener('message', function(e) {
         if (!e.data || e.data.type !== 'NOVATRIX_DATA') return;
         var d = e.data;
-        try {
-            switch(d.widgetId) {
-                case 'pnl-status': {
-                    var el = document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var pnl = d.totalPnl || 0;
-                        var isPos = pnl >= 0;
-                        el.innerText = (isPos ? '+' : '-') + '
-</html> + Math.abs(pnl).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                        el.className = 'profit-value ' + (isPos ? 'is-positive' : 'is-negative');
-                        if (typeof adjustFontSize === 'function') adjustFontSize();
-                    }
-                    if (pctEl && d.totalTrades > 0) {
-                        var pct = ((d.totalPnl / 10000) * 100);
-                        pctEl.innerText = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
-                        pctEl.className = 'percentage ' + (pct >= 0 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'profit-factor': {
-                    var el = document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var pf = d.profitFactor || 0;
-                        el.innerText = pf.toFixed(2);
-                        el.className = 'profit-value ' + (pf >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    if (pctEl) {
-                        pctEl.innerText = pf >= 1.5 ? 'STRONG' : pf >= 1 ? 'FAIR' : 'WEAK';
-                        pctEl.className = 'percentage ' + (pf >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'sharpe-ratio': {
-                    var el = document.getElementById('sharpeDisplay') || document.getElementById('profitDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        var sr = d.sharpeRatio || 0;
-                        el.innerText = sr.toFixed(2);
-                        el.className = el.className.replace(/is-\w+/g, '') + (sr >= 1 ? ' is-positive' : sr >= 0 ? '' : ' is-negative');
-                    }
-                    if (pctEl) {
-                        pctEl.innerText = sr >= 2 ? 'EXCELLENT' : sr >= 1 ? 'GOOD' : sr >= 0 ? 'FAIR' : 'POOR';
-                        pctEl.className = 'percentage ' + (sr >= 1 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'winrate': {
-                    var el = document.getElementById('winrateDisplay');
-                    var pctEl = document.getElementById('percentageDisplay');
-                    if (el) {
-                        el.innerText = (d.winRate || 0).toFixed(2) + '%';
-                    }
-                    if (pctEl) {
-                        var wr = d.winRate || 0;
-                        pctEl.innerText = wr >= 50 ? 'ABOVE AVG' : 'BELOW AVG';
-                        pctEl.className = 'percentage ' + (wr >= 50 ? 'is-positive' : 'is-negative');
-                    }
-                    break;
-                }
-                case 'total-trades': {
-                    var el = document.getElementById('tradesDisplay') || document.querySelector('.profit-value, .winrate-value, h1');
-                    if (el) {
-                        el.innerText = String(d.totalTrades || 0);
-                    }
-                    break;
-                }
-                case 'novatrix-score': {
-                    var el = document.querySelector('.score-value, .profit-value, h1');
-                    if (el) {
-                        el.innerText = String(d.novatrixScore || 0);
-                    }
-                    break;
-                }
-                case 'equity-drawdown': {
-                    var el = document.querySelector('.drawdown-value, .profit-value, h1');
-                    if (el) {
-                        var dd = d.maxDrawdown || 0;
-                        el.innerText = dd.toFixed(2) + '%';
-                    }
-                    break;
-                }
-            }
-        } catch(err) { /* silently ignore */ }
+        var overlay = document.getElementById('noDataOverlay');
+        if (overlay) {
+            var showOverlay = d.totalTrades === 0 && !d.demoMode;
+            overlay.style.display = showOverlay ? 'flex' : 'none';
+        }
+
+        if (d.trades) {
+            renderAssets(d.trades);
+        }
     });
     </script>
+
 </body>
 </html>
